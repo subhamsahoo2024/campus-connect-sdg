@@ -21,32 +21,25 @@ export async function getStudentMentorMatches() {
 
   if (!profile) throw new Error('Profile not found')
 
-  // Generate embedding if not exists
   let embedding: number[] | null = profile.embedding
   if (!embedding) {
     embedding = await generateProfileEmbedding({
       full_name: profile.full_name,
       bio: profile.bio,
       skills: profile.skills,
-      interests: null,
       sdgs: profile.sdgs,
       role: profile.role,
     })
-
     if (embedding) {
       await supabase.from('profiles').update({ embedding }).eq('id', user.id)
     } else {
-      throw new Error('Could not generate embedding for profile')
+      throw new Error('Could not generate embedding – fill in your profile first.')
     }
   }
 
-  // Use the complete matchmaking pipeline
   try {
-    const matches = await findMentorsForStudent(user.id, 5)
-    return matches
-  } catch (error) {
-    console.error('Error finding mentors:', error)
-    // Fallback if matchmaking fails
+    return await findMentorsForStudent(user.id, 5)
+  } catch {
     return []
   }
 }
@@ -58,8 +51,7 @@ export async function connectWithMentor(mentorId: string) {
   } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
-  // Check if matches table has the connection
-  await supabase.from('matches').upsert({
+  await supabase.from('mentorship_connections').upsert({
     mentor_id: mentorId,
     student_id: user.id,
     status: 'pending',
@@ -83,28 +75,25 @@ export async function getMenteeSuggestions() {
 
   if (!profile) throw new Error('Profile not found')
 
-  // Generate embedding if not exists
   let embedding: number[] | null = profile.embedding
   if (!embedding) {
     embedding = await generateProfileEmbedding({
       full_name: profile.full_name,
       bio: profile.bio,
       skills: profile.skills,
-      interests: null,
       sdgs: profile.sdgs,
       role: profile.role,
     })
-
     if (embedding) {
       await supabase.from('profiles').update({ embedding }).eq('id', user.id)
     } else {
-      throw new Error('Could not generate embedding for profile')
+      throw new Error('Could not generate embedding for profile.')
     }
   }
 
   const matches = await findSimilarProfiles(embedding, 'student', 10)
 
-  const results = await Promise.all(
+  return Promise.all(
     matches.map(async (match) => {
       try {
         const reasoning = await generateMatchReasoning(
@@ -123,8 +112,7 @@ export async function getMenteeSuggestions() {
           match.similarity
         )
         return { ...match, reasoning }
-      } catch (error) {
-        console.error('Error generating reasoning:', error)
+      } catch {
         return {
           ...match,
           reasoning: `${Math.round(match.similarity * 100)}% match based on shared interests.`,
@@ -132,24 +120,4 @@ export async function getMenteeSuggestions() {
       }
     })
   )
-
-  return results
-}
-          skills: profile.skills,
-          sdg_interests: profile.sdg_interests,
-          bio: profile.bio,
-        },
-        {
-          full_name: match.profile.full_name,
-          skills: match.profile.skills,
-          sdg_interests: match.profile.sdg_interests,
-          bio: match.profile.bio,
-        },
-        match.similarity
-      )
-      return { ...match, reasoning }
-    })
-  )
-
-  return results
 }

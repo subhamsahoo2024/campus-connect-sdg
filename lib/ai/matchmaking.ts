@@ -1,68 +1,68 @@
-import { createClient } from '@/lib/supabase/server'
-import { generateMatchReasoning } from './groq'
+import { createClient } from "@/lib/supabase/server";
+import { generateMatchReasoning } from "./groq";
 
 export interface MatchResult {
   profile: {
-    id: string
-    rs_id: string
-    full_name: string
-    skills?: string[] | null
-    sdgs?: string[] | null
-    bio?: string | null
-    role: string
-    linkedin_url?: string | null
-  }
-  similarity: number
-  reasoning?: string
+    id: string;
+    rs_id: string;
+    full_name: string;
+    skills?: string[] | null;
+    sdgs?: string[] | null;
+    bio?: string | null;
+    role: string;
+    linkedin_url?: string | null;
+  };
+  similarity: number;
+  reasoning?: string;
 }
 
 export async function findSimilarProfiles(
   embedding: number[],
-  targetRole: 'mentor' | 'student',
-  limit = 5
+  targetRole: "mentor" | "student",
+  limit = 5,
 ): Promise<MatchResult[]> {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc('match_profiles', {
+  const { data, error } = await supabase.rpc("match_profiles", {
     query_embedding: embedding,
     target_role: targetRole,
     match_count: limit,
-  })
+  });
 
-  if (error) throw new Error(`Vector search error: ${error.message}`)
+  if (error) throw new Error(`Vector search error: ${error.message}`);
 
-  return (data ?? []) as MatchResult[]
+  return (data ?? []) as MatchResult[];
 }
 
 export async function findSimilarStartups(
   embedding: number[],
   filters: { stage?: string; domain?: string },
-  limit = 10
+  limit = 10,
 ): Promise<
   Array<{
-    id: string
-    name: string
-    pitch?: string | null
-    stage?: string | null
-    domain?: string | null
-    sdgs?: string[] | null
-    funding_raised?: number | null
-    student_id: string
-    similarity: number
+    id: string;
+    name: string;
+    pitch?: string | null;
+    stage?: string | null;
+    domain?: string | null;
+    sdgs?: string[] | null;
+    funding_raised?: number | null;
+    student_id: string;
+    similarity: number;
   }>
 > {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc('match_startups', {
+  const { data, error } = await supabase.rpc("match_startups", {
     query_embedding: embedding,
     filter_stage: filters.stage ?? null,
     filter_domain: filters.domain ?? null,
     match_count: limit,
-  })
+  });
 
-  if (error) throw new Error(`Startup vector search error: ${error.message}`)
+  if (error) throw new Error(`Startup vector search error: ${error.message}`);
 
-  return data ?? []
+  return data ?? [];
 }
 
 /**
@@ -71,27 +71,31 @@ export async function findSimilarStartups(
  */
 export async function findMentorsForStudent(
   studentId: string,
-  limit = 5
+  limit = 5,
 ): Promise<MatchResult[]> {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
   // Get student profile with embedding
   const { data: studentProfile, error: studentError } = await supabase
-    .from('profiles')
-    .select('id, rs_id, full_name, skills, sdgs, bio, embedding')
-    .eq('id', studentId)
-    .single()
+    .from("profiles")
+    .select("id, rs_id, full_name, skills, sdgs, bio, embedding")
+    .eq("id", studentId)
+    .single();
 
   if (studentError || !studentProfile) {
-    throw new Error('Student profile not found')
+    throw new Error("Student profile not found");
   }
 
   if (!studentProfile.embedding) {
-    throw new Error('Student profile has no embedding. Generate it first.')
+    throw new Error("Student profile has no embedding. Generate it first.");
   }
 
   // Vector search for mentors
-  const matches = await findSimilarProfiles(studentProfile.embedding, 'mentor', limit)
+  const matches = await findSimilarProfiles(
+    studentProfile.embedding,
+    "mentor",
+    limit,
+  );
 
   // Generate AI reasoning for each match
   const enrichedMatches = await Promise.all(
@@ -110,21 +114,21 @@ export async function findMentorsForStudent(
             sdgs: studentProfile.sdgs,
             bio: studentProfile.bio,
           },
-          match.similarity
-        )
-        return { ...match, reasoning }
+          match.similarity,
+        );
+        return { ...match, reasoning };
       } catch (error) {
-        console.error('Error generating reasoning:', error)
+        console.error("Error generating reasoning:", error);
         // Fallback reasoning if Groq fails
         return {
           ...match,
           reasoning: `${Math.round(match.similarity * 100)}% match based on shared skills and interests.`,
-        }
+        };
       }
-    })
-  )
+    }),
+  );
 
-  return enrichedMatches
+  return enrichedMatches;
 }
 
 /**
@@ -134,6 +138,6 @@ export async function findMentorsForStudent(
 export function calculateCompatibilityScore(vectorSimilarity: number): number {
   // Vector similarity is typically 0.0 to 1.0
   // Apply logarithmic scaling to spread scores more evenly
-  const scaled = Math.pow(vectorSimilarity, 0.7) * 100
-  return Math.round(Math.min(100, Math.max(0, scaled)))
+  const scaled = Math.pow(vectorSimilarity, 0.7) * 100;
+  return Math.round(Math.min(100, Math.max(0, scaled)));
 }

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getMentorConnections, getMentorDomainStats } from '@/app/actions/mentor'
 import Navbar from '@/components/shared/Navbar'
 import DomainChart from '@/components/mentor/DomainChart'
 
@@ -10,21 +11,18 @@ export default async function MentorDashboard() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const [{ data: profile }, { data: connections }, { data: domainStats }] = await Promise.all([
+  const [{ data: profile }, connections, domainStats] = await Promise.all([
     supabase
       .from('profiles')
       .select('rs_id, full_name, innovation_score, skills')
       .eq('id', user!.id)
       .single(),
-    supabase
-      .from('mentorship_connections')
-      .select('id, status, student_id, profiles!mentorship_connections_student_id_fkey(full_name, rs_id)')
-      .eq('mentor_id', user!.id),
-    supabase.rpc('get_mentor_domain_stats', { p_mentor_id: user!.id }),
+    getMentorConnections(),
+    getMentorDomainStats(),
   ])
 
-  const activeCount = connections?.filter((c) => c.status === 'active').length ?? 0
-  const pendingCount = connections?.filter((c) => c.status === 'pending').length ?? 0
+  const activeCount = connections.filter((c) => c.status === 'active').length
+  const pendingCount = connections.filter((c) => c.status === 'pending').length
 
   return (
     <div className="min-h-full">
@@ -59,7 +57,7 @@ export default async function MentorDashboard() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Domain Chart */}
-          <DomainChart data={domainStats ?? []} />
+          <DomainChart data={domainStats} />
 
           {/* Pending connections */}
           <div className="rounded-xl border border-white/10 bg-white/5 p-5">
@@ -74,7 +72,8 @@ export default async function MentorDashboard() {
             ) : (
               <ul className="space-y-3">
                 {connections
-                  ?.filter((c) => c.status === 'pending')
+                  .filter((c) => c.status === 'pending')
+                  .slice(0, 5)
                   .map((conn) => (
                     <li
                       key={conn.id}
@@ -82,12 +81,9 @@ export default async function MentorDashboard() {
                     >
                       <div>
                         <p className="text-sm font-medium text-white">
-                          {(conn.profiles as { full_name: string; rs_id: string } | null)?.full_name ??
-                            'Unknown'}
+                          {conn.profiles?.full_name ?? 'Unknown'}
                         </p>
-                        <p className="text-xs font-mono text-slate-500">
-                          {(conn.profiles as { full_name: string; rs_id: string } | null)?.rs_id}
-                        </p>
+                        <p className="font-mono text-xs text-slate-500">{conn.profiles?.rs_id}</p>
                       </div>
                       <span className="rounded-full bg-yellow-500/10 px-2.5 py-0.5 text-xs font-medium text-yellow-400 ring-1 ring-yellow-500/30">
                         Pending
@@ -95,6 +91,14 @@ export default async function MentorDashboard() {
                     </li>
                   ))}
               </ul>
+            )}
+            {pendingCount > 0 && (
+              <a
+                href="/mentor/mentees"
+                className="mt-4 block text-center text-xs text-purple-400 underline"
+              >
+                View all connections →
+              </a>
             )}
           </div>
         </div>

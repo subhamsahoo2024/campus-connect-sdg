@@ -1,25 +1,29 @@
 interface MenteeCardProps {
   mentee: {
-    id: string
-    rs_id: string
-    full_name: string
-    skills?: string[] | null
-    sdgs?: string[] | null
-    bio?: string | null
-    linkedin_url?: string | null
-  }
-  compatibilityScore: number
-  reasoning?: string
-  onConnect?: (menteeId: string) => void
+    id: string;
+    rs_id: string;
+    full_name: string;
+    skills?: string[] | null;
+    sdgs?: string[] | null;
+    bio?: string | null;
+    linkedin_url?: string | null;
+  };
+  compatibilityScore: number;
+  reasoning?: string;
+  onConnect?: (menteeId: string) => void;
 }
 
-export default function MenteeCard({ mentee, compatibilityScore, reasoning }: MenteeCardProps) {
+export default function MenteeCard({
+  mentee,
+  compatibilityScore,
+  reasoning,
+}: MenteeCardProps) {
   const scoreColor =
     compatibilityScore >= 0.8
-      ? 'text-green-400 bg-green-500/10 ring-green-500/30'
+      ? "text-green-400 bg-green-500/10 ring-green-500/30"
       : compatibilityScore >= 0.6
-        ? 'text-yellow-400 bg-yellow-500/10 ring-yellow-500/30'
-        : 'text-blue-400 bg-blue-500/10 ring-blue-500/30'
+        ? "text-yellow-400 bg-yellow-500/10 ring-yellow-500/30"
+        : "text-blue-400 bg-blue-500/10 ring-blue-500/30";
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-white/10 bg-white/5 p-5 transition hover:border-purple-500/30">
@@ -29,13 +33,17 @@ export default function MenteeCard({ mentee, compatibilityScore, reasoning }: Me
           <h4 className="font-semibold text-white">{mentee.full_name}</h4>
           <p className="font-mono text-xs text-slate-400">{mentee.rs_id}</p>
         </div>
-        <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${scoreColor}`}>
+        <span
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${scoreColor}`}
+        >
           {Math.round(compatibilityScore * 100)}% match
         </span>
       </div>
 
       {/* Bio */}
-      {mentee.bio && <p className="line-clamp-2 text-sm text-slate-400">{mentee.bio}</p>}
+      {mentee.bio && (
+        <p className="line-clamp-2 text-sm text-slate-400">{mentee.bio}</p>
+      )}
 
       {/* Skills */}
       {mentee.skills && mentee.skills.length > 0 && (
@@ -54,7 +62,9 @@ export default function MenteeCard({ mentee, compatibilityScore, reasoning }: Me
       {/* AI Reasoning */}
       {reasoning && (
         <div className="rounded-lg bg-purple-500/5 p-3 ring-1 ring-purple-500/20">
-          <p className="mb-1 text-xs font-semibold text-purple-400">Why this match?</p>
+          <p className="mb-1 text-xs font-semibold text-purple-400">
+            Why this match?
+          </p>
           <p className="text-xs leading-relaxed text-slate-300">{reasoning}</p>
         </div>
       )}
@@ -81,5 +91,5 @@ export default function MenteeCard({ mentee, compatibilityScore, reasoning }: Me
         )}
       </div>
     </div>
-  )
+  );
 }

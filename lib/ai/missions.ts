@@ -4,12 +4,12 @@
  * and provides helper functions for mission management
  */
 
-import { generateDailyMissions as groqGenerateDailyMissions } from './groq'
+import { generateDailyMissions as groqGenerateDailyMissions } from "./groq";
 
 export interface DailyMission {
-  title: string
-  description: string
-  xp_reward: number
+  title: string;
+  description: string;
+  xp_reward: number;
 }
 
 /**
@@ -17,27 +17,27 @@ export interface DailyMission {
  * Wrapper around groq.generateDailyMissions with simplified interface
  */
 export async function generateDailyMissions(context: {
-  studentName: string
-  startupStage?: string
-  startupName?: string
-  skills?: string[]
-  interests?: string[]
-  innovationScore?: number
+  studentName: string;
+  startupStage?: string;
+  startupName?: string;
+  skills?: string[];
+  interests?: string[];
+  innovationScore?: number;
 }): Promise<DailyMission[]> {
   // Prepare profile and startup data
   const profile = {
     full_name: context.studentName,
     skills: context.skills || [],
     interests: context.interests || [],
-  }
+  };
 
   const startup = context.startupName
     ? {
         name: context.startupName,
-        stage: context.startupStage || 'idea',
+        stage: context.startupStage || "idea",
         domain: null,
       }
-    : null
+    : null;
 
-  return groqGenerateDailyMissions(profile, startup)
+  return groqGenerateDailyMissions(profile, startup);
 }
