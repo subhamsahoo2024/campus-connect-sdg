@@ -3,13 +3,13 @@ interface MenteeCardProps {
     id: string
     rs_id: string
     full_name: string
-    skills: string[]
-    sdg_interests: string[]
-    bio: string
-    linkedin_url: string
+    skills?: string[] | null
+    sdgs?: string[] | null
+    bio?: string | null
+    linkedin_url?: string | null
   }
   compatibilityScore: number
-  reasoning: string
+  reasoning?: string
   onConnect?: (menteeId: string) => void
 }
 
@@ -18,8 +18,8 @@ export default function MenteeCard({ mentee, compatibilityScore, reasoning }: Me
     compatibilityScore >= 0.8
       ? 'text-green-400 bg-green-500/10 ring-green-500/30'
       : compatibilityScore >= 0.6
-      ? 'text-yellow-400 bg-yellow-500/10 ring-yellow-500/30'
-      : 'text-blue-400 bg-blue-500/10 ring-blue-500/30'
+        ? 'text-yellow-400 bg-yellow-500/10 ring-yellow-500/30'
+        : 'text-blue-400 bg-blue-500/10 ring-blue-500/30'
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-white/10 bg-white/5 p-5 transition hover:border-purple-500/30">
@@ -27,7 +27,7 @@ export default function MenteeCard({ mentee, compatibilityScore, reasoning }: Me
       <div className="flex items-start justify-between gap-3">
         <div>
           <h4 className="font-semibold text-white">{mentee.full_name}</h4>
-          <p className="text-xs font-mono text-slate-400">{mentee.rs_id}</p>
+          <p className="font-mono text-xs text-slate-400">{mentee.rs_id}</p>
         </div>
         <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${scoreColor}`}>
           {Math.round(compatibilityScore * 100)}% match
@@ -35,12 +35,10 @@ export default function MenteeCard({ mentee, compatibilityScore, reasoning }: Me
       </div>
 
       {/* Bio */}
-      {mentee.bio && (
-        <p className="text-sm text-slate-400 line-clamp-2">{mentee.bio}</p>
-      )}
+      {mentee.bio && <p className="line-clamp-2 text-sm text-slate-400">{mentee.bio}</p>}
 
       {/* Skills */}
-      {mentee.skills?.length > 0 && (
+      {mentee.skills && mentee.skills.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {mentee.skills.slice(0, 4).map((skill) => (
             <span
@@ -54,10 +52,12 @@ export default function MenteeCard({ mentee, compatibilityScore, reasoning }: Me
       )}
 
       {/* AI Reasoning */}
-      <div className="rounded-lg bg-purple-500/5 p-3 ring-1 ring-purple-500/20">
-        <p className="mb-1 text-xs font-semibold text-purple-400">Why this match?</p>
-        <p className="text-xs text-slate-300 leading-relaxed">{reasoning}</p>
-      </div>
+      {reasoning && (
+        <div className="rounded-lg bg-purple-500/5 p-3 ring-1 ring-purple-500/20">
+          <p className="mb-1 text-xs font-semibold text-purple-400">Why this match?</p>
+          <p className="text-xs leading-relaxed text-slate-300">{reasoning}</p>
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex gap-2">

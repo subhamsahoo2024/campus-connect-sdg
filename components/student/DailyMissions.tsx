@@ -8,7 +8,7 @@ interface Mission {
   title: string
   description: string
   xp_reward: number
-  completed: boolean
+  is_completed: boolean
 }
 
 interface DailyMissionsProps {
@@ -18,7 +18,7 @@ interface DailyMissionsProps {
 export default function DailyMissions({ missions }: DailyMissionsProps) {
   const [isPending, startTransition] = useTransition()
   const [localCompleted, setLocalCompleted] = useState<Set<string>>(
-    new Set(missions.filter((m) => m.completed).map((m) => m.id))
+    new Set(missions.filter((m) => m.is_completed).map((m) => m.id))
   )
 
   function handleComplete(mission: Mission) {

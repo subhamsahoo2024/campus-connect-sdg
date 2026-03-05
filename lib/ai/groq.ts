@@ -10,8 +10,8 @@ function getGroqClient(): Groq {
 }
 
 export async function generateMatchReasoning(
-  mentor: { full_name: string; skills: string[]; sdg_interests: string[]; bio: string },
-  student: { full_name: string; skills: string[]; sdg_interests: string[]; bio: string },
+  mentor: { full_name: string; skills?: string[] | null; sdgs?: string[] | null; bio?: string | null },
+  student: { full_name: string; skills?: string[] | null; sdgs?: string[] | null; bio?: string | null },
   similarityScore: number
 ): Promise<string> {
   const groq = getGroqClient()
@@ -21,12 +21,12 @@ A mentor and student have been algorithmically matched with a ${Math.round(simil
 
 Mentor: ${mentor.full_name}
 Skills: ${mentor.skills?.join(', ') || 'N/A'}
-SDG Interests: ${mentor.sdg_interests?.join(', ') || 'N/A'}
+SDG Interests: ${mentor.sdgs?.join(', ') || 'N/A'}
 Bio: ${mentor.bio || 'N/A'}
 
 Student: ${student.full_name}
 Skills: ${student.skills?.join(', ') || 'N/A'}
-SDG Interests: ${student.sdg_interests?.join(', ') || 'N/A'}
+SDG Interests: ${student.sdgs?.join(', ') || 'N/A'}
 Bio: ${student.bio || 'N/A'}
 
 Write exactly 2 sentences explaining why this is a good match. Be specific, mentioning shared skills or overlapping SDG goals. Do not add any preamble.`
@@ -38,16 +38,19 @@ Write exactly 2 sentences explaining why this is a good match. Be specific, ment
     temperature: 0.7,
   })
 
-  return completion.choices[0]?.message?.content?.trim() ?? 'Strong compatibility based on shared interests and skills.'
+  return (
+    completion.choices[0]?.message?.content?.trim() ??
+    'Strong compatibility based on shared interests and skills.'
+  )
 }
 
 export async function generateStartupGrowthInsight(
   startup: {
     name: string
-    description: string
-    stage: string
-    domain: string
-    sdg_tags: string[]
+    pitch?: string | null
+    stage?: string | null
+    domain?: string | null
+    sdgs?: string[] | null
   },
   activitySummary: string
 ): Promise<string> {
@@ -57,10 +60,10 @@ export async function generateStartupGrowthInsight(
 Analyze this startup and write a 3-sentence growth insight for an investor.
 
 Startup: ${startup.name}
-Description: ${startup.description}
-Stage: ${startup.stage}
-Domain: ${startup.domain}
-SDG Tags: ${startup.sdg_tags?.join(', ') || 'N/A'}
+Pitch: ${startup.pitch || 'N/A'}
+Stage: ${startup.stage || 'N/A'}
+Domain: ${startup.domain || 'N/A'}
+SDG Tags: ${startup.sdgs?.join(', ') || 'N/A'}
 Activity: ${activitySummary}
 
 Write exactly 3 concise sentences covering: (1) the team's momentum, (2) the market opportunity, and (3) a forward-looking observation. No preamble.`
@@ -72,7 +75,10 @@ Write exactly 3 concise sentences covering: (1) the team's momentum, (2) the mar
     temperature: 0.7,
   })
 
-  return completion.choices[0]?.message?.content?.trim() ?? 'Promising early-stage startup with strong fundamentals.'
+  return (
+    completion.choices[0]?.message?.content?.trim() ??
+    'Promising early-stage startup with strong fundamentals.'
+  )
 }
 
 export async function generateWeeklyEcosystemReport(ecosystemData: {
@@ -107,4 +113,111 @@ Be specific and actionable. No bullet points, flowing paragraphs only.`
   })
 
   return completion.choices[0]?.message?.content?.trim() ?? 'Data insufficient for report generation.'
+}
+
+/**
+ * Generate daily missions for a student using Llama 3.1 8B Instant
+ * Fast and efficient mission generation based on startup stage and profile
+ */
+export async function generateDailyMissions(
+  profile: {
+    full_name: string
+    skills?: string[] | null
+    interests?: string[] | null
+  },
+  startup?: {
+    name: string
+    stage?: string | null
+    domain?: string | null
+  } | null
+): Promise<Array<{ title: string; description: string; xp_reward: number }>> {
+  const groq = getGroqClient()
+
+  const startupContext = startup
+    ? `Student has a startup called "${startup.name}" at ${startup.stage || 'idea'} stage in the ${startup.domain || 'general'} domain.`
+    : 'Student does not have a startup yet.'
+
+  const prompt = `You are a gamification engine for a university innovation platform.
+Generate exactly 3 daily missions for ${profile.full_name}.
+
+${startupContext}
+Skills: ${profile.skills?.join(', ') || 'N/A'}
+Interests: ${profile.interests?.join(', ') || 'N/A'}
+
+Generate 3 missions that are:
+1. Actionable and specific (not vague)
+2. Achievable today (30 min to 2 hours each)
+3. Tailored to their startup stage or skills
+4. Progressive in difficulty (easy → medium → hard)
+
+For each mission, provide:
+- title: Short action-oriented title (max 6 words)
+- description: One sentence explaining the task
+- xp_reward: XP points (10 for easy, 20 for medium, 30 for hard)
+
+Respond ONLY with valid JSON array in this exact format:
+[
+  {"title": "...", "description": "...", "xp_reward": 10},
+  {"title": "...", "description": "...", "xp_reward": 20},
+  {"title": "...", "description": "...", "xp_reward": 30}
+]
+
+No markdown code blocks, no preamble, just the JSON array.`
+
+  try {
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.1-8b-instant',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 400,
+      temperature: 0.9,
+    })
+
+    const content = completion.choices[0]?.message?.content?.trim() ?? '[]'
+
+    // Try to parse JSON from response
+    const jsonMatch = content.match(/\[[\s\S]*\]/)
+    if (jsonMatch) {
+      const missions = JSON.parse(jsonMatch[0])
+      return missions.slice(0, 3) // Ensure max 3 missions
+    }
+
+    // Fallback if parsing fails
+    return [
+      {
+        title: 'Update Your Startup Page',
+        description: 'Add or refine your pitch on the startup page.',
+        xp_reward: 10,
+      },
+      {
+        title: 'Connect with a Mentor',
+        description: 'Browse mentors and send a connection request.',
+        xp_reward: 20,
+      },
+      {
+        title: 'Share Your Progress',
+        description: 'Post an update about your startup journey on LinkedIn.',
+        xp_reward: 30,
+      },
+    ]
+  } catch (error) {
+    console.error('Error generating missions:', error)
+    // Return fallback missions
+    return [
+      {
+        title: 'Update Your Profile',
+        description: 'Add more details about your skills and interests.',
+        xp_reward: 10,
+      },
+      {
+        title: 'Explore Opportunities',
+        description: 'Browse available mentors and potential matches.',
+        xp_reward: 20,
+      },
+      {
+        title: 'Build Your Network',
+        description: 'Connect with peers working on similar challenges.',
+        xp_reward: 30,
+      },
+    ]
+  }
 }

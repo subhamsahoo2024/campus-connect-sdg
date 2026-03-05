@@ -11,21 +11,25 @@ export async function fetchOrGenerateMissions() {
   } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
 
-  // Check if missions already exist for today
+  // Check if missions already exist for today (not expired)
   const { data: existing } = await supabase
-    .from('daily_missions')
+    .from('missions')
     .select('*')
     .eq('student_id', user.id)
-    .eq('date', today)
+    .gte('expires_at', today.toISOString())
+    .lt('created_at', tomorrow.toISOString())
 
   if (existing && existing.length > 0) return existing
 
   // Fetch profile + startup for context
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, skills, innovation_score')
+    .select('full_name, skills, interests, innovation_score')
     .eq('id', user.id)
     .single()
 
@@ -42,12 +46,20 @@ export async function fetchOrGenerateMissions() {
     startupStage: startup?.stage ?? 'idea',
     startupName: startup?.name,
     skills: profile?.skills ?? [],
+    interests: profile?.interests ?? [],
     innovationScore: profile?.innovation_score ?? 0,
   })
 
+  // Set expiration to midnight tomorrow
+  const expiresAt = new Date(tomorrow)
+  
   const { data: inserted } = await supabase
-    .from('daily_missions')
-    .insert(missions.map((m) => ({ ...m, student_id: user.id, date: today })))
+    .from('missions')
+    .insert(missions.map((m) => ({ 
+      ...m, 
+      student_id: user.id, 
+      expires_at: expiresAt.toISOString() 
+    })))
     .select()
 
   revalidateTag('missions')

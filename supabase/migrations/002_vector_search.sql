@@ -110,6 +110,6 @@ returns void
 language sql
 as $$
   update profiles
-  set streak_days = streak_days + 1
+  set streak_count = streak_count + 1
   where id = p_user_id;
 $$;

@@ -18,7 +18,7 @@ create table if not exists profiles (
   role              text not null check (role in ('student', 'mentor', 'investor', 'admin')),
   avatar_state      text default 'idle',
   innovation_score  integer default 0,
-  streak_days       integer default 0,
+  streak_count      integer default 0,
   skills            text[],
   sdg_interests     text[],
   bio               text,
@@ -84,17 +84,17 @@ create table if not exists meetings (
 );
 
 -- ────────────────────────────────────────────────────────────
--- 6. daily_missions
+-- 6. missions (daily AI-generated missions)
 -- ────────────────────────────────────────────────────────────
-create table if not exists daily_missions (
-  id          uuid primary key default uuid_generate_v4(),
-  student_id  uuid references profiles(id) on delete cascade,
-  title       text not null,
-  description text,
-  xp_reward   integer default 50,
-  completed   boolean default false,
-  date        date default current_date,
-  created_at  timestamptz default now()
+create table if not exists missions (
+  id           uuid primary key default uuid_generate_v4(),
+  student_id   uuid references profiles(id) on delete cascade,
+  title        text not null,
+  description  text,
+  xp_reward    integer default 50,
+  is_completed boolean default false,
+  expires_at   timestamptz not null default (now() + interval '24 hours'),
+  created_at   timestamptz default now()
 );
 
 -- ────────────────────────────────────────────────────────────
@@ -152,7 +152,7 @@ alter table startups enable row level security;
 alter table investor_pipeline enable row level security;
 alter table mentorship_connections enable row level security;
 alter table meetings enable row level security;
-alter table daily_missions enable row level security;
+alter table missions enable row level security;
 alter table kpi_cache enable row level security;
 alter table ai_reports enable row level security;
 
@@ -180,8 +180,8 @@ create policy "meetings_own"         on meetings for select
   using (auth.uid() = mentor_id or auth.uid() = student_id);
 create policy "meetings_insert"      on meetings for insert with check (auth.uid() = mentor_id);
 
--- daily_missions: student sees only their own
-create policy "missions_own"         on daily_missions for all using (auth.uid() = student_id);
+-- missions: student sees only their own
+create policy "missions_own"         on missions for all using (auth.uid() = student_id);
 
 -- kpi_cache: readable by all authenticated users
 create policy "kpi_read"             on kpi_cache for select using (auth.role() = 'authenticated');

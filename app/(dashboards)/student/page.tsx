@@ -17,7 +17,7 @@ export default async function StudentDashboard() {
   const [{ data: profile }, { data: startup }, missions] = await Promise.all([
     supabase
       .from('profiles')
-      .select('rs_id, full_name, innovation_score, streak_days, avatar_state')
+      .select('rs_id, full_name, innovation_score, streak_count, avatar_state')
       .eq('id', user!.id)
       .single(),
     supabase
@@ -54,7 +54,7 @@ export default async function StudentDashboard() {
             <p className="mt-0.5 text-xs text-slate-400">Innovation Score</p>
           </div>
           <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-4">
-            <p className="text-xl font-bold text-white">{profile?.streak_days ?? 0} days</p>
+            <p className="text-xl font-bold text-white">{profile?.streak_count ?? 0} days</p>
             <p className="mt-0.5 text-xs text-slate-400">Day Streak</p>
           </div>
           <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
@@ -65,7 +65,7 @@ export default async function StudentDashboard() {
           </div>
           <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-4">
             <p className="text-xl font-bold text-white">
-              {missions.filter((m: { completed: boolean }) => m.completed).length}/{missions.length}
+              {missions.filter((m: { is_completed: boolean }) => m.is_completed).length}/{missions.length}
             </p>
             <p className="mt-0.5 text-xs text-slate-400">Missions Today</p>
           </div>
@@ -84,7 +84,7 @@ export default async function StudentDashboard() {
                   | 'sad'
               }
               innovationScore={profile?.innovation_score ?? 0}
-              streakDays={profile?.streak_days ?? 0}
+              streakDays={profile?.streak_count ?? 0}
             />
             {startup && (
               <div className="mt-6 w-full">

@@ -1,34 +1,36 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export default async function StudentProfilePage() {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
-  if (!user) redirect('/sign-in')
+  if (!user) redirect("/sign-in");
 
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
 
-  if (!profile) redirect('/sign-in')
+  if (!profile) redirect("/sign-in");
 
   const { data: badges } = await supabase
-    .from('user_badges')
-    .select(`
+    .from("user_badges")
+    .select(
+      `
       *,
       badges (
         name,
         description,
         icon_url
       )
-    `)
-    .eq('user_id', user.id)
-    .order('earned_at', { ascending: false })
+    `,
+    )
+    .eq("user_id", user.id)
+    .order("earned_at", { ascending: false });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 p-8">
@@ -47,12 +49,12 @@ export default async function StudentProfilePage() {
             {/* Avatar */}
             <div className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-full border-4 border-purple-500/30 bg-gradient-to-br from-purple-500/20 to-pink-500/20">
               <div className="flex h-full w-full items-center justify-center text-6xl">
-                {profile.avatar_state === 'excited' && '🎉'}
-                {profile.avatar_state === 'celebrating' && '🏆'}
-                {profile.avatar_state === 'running' && '🚀'}
-                {profile.avatar_state === 'thinking' && '🤔'}
-                {profile.avatar_state === 'sad' && '😢'}
-                {profile.avatar_state === 'idle' && '✨'}
+                {profile.avatar_state === "excited" && "🎉"}
+                {profile.avatar_state === "celebrating" && "🏆"}
+                {profile.avatar_state === "running" && "🚀"}
+                {profile.avatar_state === "thinking" && "🤔"}
+                {profile.avatar_state === "sad" && "😢"}
+                {profile.avatar_state === "idle" && "✨"}
               </div>
             </div>
 
@@ -73,7 +75,7 @@ export default async function StudentProfilePage() {
                     Full Name
                   </label>
                   <div className="mt-1 text-lg text-white">
-                    {profile.full_name || 'Not set'}
+                    {profile.full_name || "Not set"}
                   </div>
                 </div>
 
@@ -89,7 +91,7 @@ export default async function StudentProfilePage() {
                     Institution
                   </label>
                   <div className="mt-1 text-lg text-white">
-                    {profile.institution || 'Not set'}
+                    {profile.institution || "Not set"}
                   </div>
                 </div>
 
@@ -98,15 +100,17 @@ export default async function StudentProfilePage() {
                     Department
                   </label>
                   <div className="mt-1 text-lg text-white">
-                    {profile.department || 'Not set'}
+                    {profile.department || "Not set"}
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-400">Bio</label>
+                <label className="text-sm font-medium text-slate-400">
+                  Bio
+                </label>
                 <div className="mt-1 text-white">
-                  {profile.bio || 'Tell us about yourself...'}
+                  {profile.bio || "Tell us about yourself..."}
                 </div>
               </div>
 
@@ -171,7 +175,7 @@ export default async function StudentProfilePage() {
                   className="flex flex-col items-center rounded-lg border border-white/10 bg-white/5 p-4 text-center"
                 >
                   <div className="mb-2 text-4xl">
-                    {userBadge.badges.icon_url || '🎖️'}
+                    {userBadge.badges.icon_url || "🎖️"}
                   </div>
                   <div className="text-sm font-semibold text-white">
                     {userBadge.badges.name}
@@ -217,5 +221,5 @@ export default async function StudentProfilePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

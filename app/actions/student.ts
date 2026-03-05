@@ -2,7 +2,7 @@
 
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { generateEmbedding, buildStartupEmbeddingText } from '@/lib/ai/embeddings'
+import { generateStartupEmbedding } from '@/lib/ai/embeddings'
 
 export type StartupStage = 'idea' | 'mvp' | 'revenue' | 'funded' | 'scaling'
 
@@ -59,36 +59,47 @@ export async function upsertStartup(formData: FormData) {
   if (!user) throw new Error('Unauthorized')
 
   const name = formData.get('name') as string
-  const description = formData.get('description') as string
+  const pitch = formData.get('pitch') as string
   const domain = formData.get('domain') as string
-  const sdgTagsRaw = formData.get('sdg_tags') as string
-  const sdg_tags = sdgTagsRaw
-    ? sdgTagsRaw.split(',').map((t) => t.trim()).filter(Boolean)
-    : []
+  const sdgsRaw = formData.get('sdgs') as string
+  const sdgs = sdgsRaw ? sdgsRaw.split(',').map((t) => t.trim()).filter(Boolean) : []
   const startupId = formData.get('startup_id') as string | null
 
   // Generate embedding for matchmaking
-  const embeddingText = buildStartupEmbeddingText({ name, description, domain, sdg_tags })
   let embedding: number[] | null = null
   try {
-    embedding = await generateEmbedding(embeddingText)
-  } catch {
+    embedding = await generateStartupEmbedding({ 
+      name, 
+      pitch, 
+      domain, 
+      stage: 'idea',
+      sdgs 
+    })
+  } catch (error) {
+    console.error('Embedding generation failed:', error)
     // embedding generation is non-critical; proceed without it
   }
 
   if (startupId) {
     await supabase
       .from('startups')
-      .update({ name, description, domain, sdg_tags, embedding, updated_at: new Date().toISOString() })
+      .update({
+        name,
+        pitch,
+        domain,
+        sdgs,
+        embedding,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', startupId)
       .eq('student_id', user.id)
   } else {
     await supabase.from('startups').insert({
       student_id: user.id,
       name,
-      description,
+      pitch,
       domain,
-      sdg_tags,
+      sdgs,
       stage: 'idea',
       embedding,
     })
@@ -107,8 +118,8 @@ export async function completeMission(missionId: string, xpReward: number) {
   if (!user) throw new Error('Unauthorized')
 
   await supabase
-    .from('daily_missions')
-    .update({ completed: true })
+    .from('missions')
+    .update({ is_completed: true })
     .eq('id', missionId)
     .eq('student_id', user.id)
 
