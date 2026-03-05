@@ -62,11 +62,11 @@ export async function upsertStartup(formData: FormData) {
   if (!user) throw new Error("Unauthorized");
 
   const name = formData.get("name") as string;
-  const pitch = formData.get("pitch") as string;
+  const description = formData.get("description") as string;
   const domain = formData.get("domain") as string;
-  const sdgsRaw = formData.get("sdgs") as string;
-  const sdgs = sdgsRaw
-    ? sdgsRaw
+  const sdgTagsRaw = formData.get("sdg_tags") as string;
+  const sdg_tags = sdgTagsRaw
+    ? sdgTagsRaw
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean)
@@ -78,10 +78,10 @@ export async function upsertStartup(formData: FormData) {
   try {
     embedding = await generateStartupEmbedding({
       name,
-      pitch,
+      description,
       domain,
       stage: "idea",
-      sdgs,
+      sdg_tags,
     });
   } catch (error) {
     console.error("Embedding generation failed:", error);
@@ -93,9 +93,9 @@ export async function upsertStartup(formData: FormData) {
       .from("startups")
       .update({
         name,
-        pitch,
+        description,
         domain,
-        sdgs,
+        sdg_tags,
         embedding,
         updated_at: new Date().toISOString(),
       })
@@ -105,9 +105,9 @@ export async function upsertStartup(formData: FormData) {
     await supabase.from("startups").insert({
       student_id: user.id,
       name,
-      pitch,
+      description,
       domain,
-      sdgs,
+      sdg_tags,
       stage: "idea",
       embedding,
     });

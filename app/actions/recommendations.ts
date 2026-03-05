@@ -2,7 +2,7 @@
 
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { generateEmbedding, buildStartupEmbeddingText } from '@/lib/ai/embeddings'
+import { generateEmbedding } from '@/lib/ai/embeddings'
 import { findSimilarStartups } from '@/lib/ai/matchmaking'
 import { generateStartupGrowthInsight } from '@/lib/ai/groq'
 
@@ -15,36 +15,42 @@ export async function getRecommendedStartups(filters: { stage?: string; domain?:
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('bio, skills, sdg_interests')
+    .select('bio, skills, sdgs')
     .eq('id', user.id)
     .single()
 
   const thesisText = [
     profile?.bio ?? '',
     profile?.skills?.join(', ') ?? '',
-    profile?.sdg_interests?.join(', ') ?? '',
+    (profile?.sdgs as string[] | null)?.join(', ') ?? '',
     filters.domain ?? '',
   ]
     .filter(Boolean)
     .join('. ')
 
   const embedding = await generateEmbedding(thesisText)
+  if (!embedding) throw new Error('Could not generate embedding – ensure HUGGING_FACE_API_KEY is set.')
+
   const startups = await findSimilarStartups(embedding, filters, 10)
 
   // Generate growth insights for top 5
   const withInsights = await Promise.all(
     startups.slice(0, 5).map(async (s) => {
-      const insight = await generateStartupGrowthInsight(
-        {
-          name: s.name,
-          description: s.description,
-          stage: s.stage,
-          domain: s.domain,
-          sdg_tags: s.sdg_tags,
-        },
-        `Startup at ${s.stage} stage.`
-      )
-      return { ...s, growth_insight: insight }
+      try {
+        const insight = await generateStartupGrowthInsight(
+          {
+            name: s.name,
+            description: s.description,
+            stage: s.stage,
+            domain: s.domain,
+            sdg_tags: s.sdg_tags,
+          },
+          `Startup at ${s.stage ?? 'idea'} stage.`
+        )
+        return { ...s, growth_insight: insight }
+      } catch {
+        return { ...s, growth_insight: null }
+      }
     })
   )
 

@@ -20,7 +20,7 @@ create table if not exists profiles (
   innovation_score  integer default 0,
   streak_count      integer default 0,
   skills            text[],
-  sdg_interests     text[],
+  sdgs              text[],
   bio               text,
   embedding         vector(384),
   linkedin_url      text,

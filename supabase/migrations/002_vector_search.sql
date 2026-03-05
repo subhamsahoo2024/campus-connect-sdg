@@ -34,7 +34,7 @@ as $$
       'rs_id',         p.rs_id,
       'full_name',     p.full_name,
       'skills',        p.skills,
-      'sdg_interests', p.sdg_interests,
+      'sdgs',          p.sdgs,
       'bio',           p.bio,
       'role',          p.role,
       'linkedin_url',  p.linkedin_url

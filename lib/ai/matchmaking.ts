@@ -42,10 +42,10 @@ export async function findSimilarStartups(
   Array<{
     id: string;
     name: string;
-    pitch?: string | null;
+    description?: string | null;
     stage?: string | null;
     domain?: string | null;
-    sdgs?: string[] | null;
+    sdg_tags?: string[] | null;
     funding_raised?: number | null;
     student_id: string;
     similarity: number;

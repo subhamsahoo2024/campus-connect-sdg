@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/shared/Navbar'
 import PipelineBoard from '@/components/investor/PipelineBoard'
-import { getInvestorPipeline } from '@/app/actions/recommendations'
+import { getInvestorPipeline, getInvestorAnalytics } from '@/app/actions/investor'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,18 +11,15 @@ export default async function InvestorDashboard() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const [{ data: profile }, pipeline] = await Promise.all([
+  const [{ data: profile }, pipeline, analytics] = await Promise.all([
     supabase
       .from('profiles')
       .select('rs_id, full_name')
       .eq('id', user!.id)
       .single(),
     getInvestorPipeline(),
+    getInvestorAnalytics(),
   ])
-
-  const totalInvested = pipeline
-    .filter((e) => e.pipeline_stage === 'invested')
-    .reduce((sum, e) => sum + ((e.startups as { funding_raised: number } | null)?.funding_raised ?? 0), 0)
 
   return (
     <div className="min-h-full">
@@ -42,9 +39,9 @@ export default async function InvestorDashboard() {
         <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
             { label: 'Total Tracked', value: pipeline.length },
-            { label: 'In Talks', value: pipeline.filter((e) => e.pipeline_stage === 'in_talks').length },
-            { label: 'Due Diligence', value: pipeline.filter((e) => e.pipeline_stage === 'due_diligence').length },
-            { label: 'Invested', value: pipeline.filter((e) => e.pipeline_stage === 'invested').length },
+            { label: 'In Talks', value: analytics.by_stage.in_talks },
+            { label: 'Due Diligence', value: analytics.by_stage.due_diligence },
+            { label: 'Invested', value: analytics.by_stage.invested },
           ].map((stat) => (
             <div key={stat.label} className="rounded-xl border border-white/10 bg-white/5 p-4">
               <p className="text-2xl font-bold text-white">{stat.value}</p>
@@ -52,6 +49,16 @@ export default async function InvestorDashboard() {
             </div>
           ))}
         </div>
+
+        {/* Total Invested */}
+        {analytics.total_invested > 0 && (
+          <div className="mb-6 rounded-xl border border-green-500/20 bg-green-500/5 p-4">
+            <p className="text-xs text-green-400">Total Invested</p>
+            <p className="text-2xl font-bold text-green-300">
+              ${analytics.total_invested.toLocaleString()}
+            </p>
+          </div>
+        )}
 
         {/* Pipeline Kanban */}
         <div className="mb-6">
@@ -64,7 +71,7 @@ export default async function InvestorDashboard() {
               + Discover Startups
             </a>
           </div>
-          <PipelineBoard initialPipeline={pipeline as Parameters<typeof PipelineBoard>[0]['initialPipeline']} />
+          <PipelineBoard initialPipeline={pipeline} />
         </div>
       </div>
     </div>

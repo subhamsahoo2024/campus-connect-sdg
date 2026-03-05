@@ -93,14 +93,14 @@ export async function generateProfileEmbedding(profile: {
 
 /**
  * Generate embedding for a startup
- * Combines pitch, domain, stage, and SDGs into searchable text
+ * Combines description, domain, stage, and SDG tags into searchable text
  */
 export async function generateStartupEmbedding(startup: {
   name: string;
-  pitch?: string | null;
+  description?: string | null;
   domain?: string | null;
   stage?: string | null;
-  sdgs?: string[] | null;
+  sdg_tags?: string[] | null;
 }): Promise<number[] | null> {
   const parts: string[] = [];
 
@@ -114,12 +114,12 @@ export async function generateStartupEmbedding(startup: {
     parts.push(`Stage: ${startup.stage}`);
   }
 
-  if (startup.pitch) {
-    parts.push(startup.pitch);
+  if (startup.description) {
+    parts.push(startup.description);
   }
 
-  if (startup.sdgs && startup.sdgs.length > 0) {
-    parts.push(`SDGs: ${startup.sdgs.join(", ")}`);
+  if (startup.sdg_tags && startup.sdg_tags.length > 0) {
+    parts.push(`SDGs: ${startup.sdg_tags.join(", ")}`);
   }
 
   const text = parts.join(". ");

@@ -1,21 +1,25 @@
-import { getRecommendedStartups } from '@/app/actions/recommendations'
+import { discoverStartups } from '@/app/actions/investor'
 import Navbar from '@/components/shared/Navbar'
 import StartupCard from '@/components/investor/StartupCard'
 
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  searchParams: Promise<{ stage?: string; domain?: string }>
+  searchParams: Promise<{ stage?: string; domain?: string; sdg?: string }>
 }
 
 export default async function DiscoverPage({ searchParams }: PageProps) {
-  const { stage, domain } = await searchParams
+  const { stage, domain, sdg } = await searchParams
 
-  let startups: Awaited<ReturnType<typeof getRecommendedStartups>> = []
+  let startups: Awaited<ReturnType<typeof discoverStartups>> = []
   let error: string | null = null
 
   try {
-    startups = await getRecommendedStartups({ stage, domain })
+    startups = await discoverStartups({
+      stage,
+      domain,
+      sdgs: sdg ? [sdg] : undefined,
+    })
   } catch (e) {
     error = (e as Error).message
   }
@@ -47,6 +51,36 @@ export default async function DiscoverPage({ searchParams }: PageProps) {
             {['FinTech', 'EdTech', 'HealthTech', 'AgriTech', 'AI/ML', 'Web3 / Blockchain', 'SaaS', 'GreenTech'].map(
               (d) => <option key={d} value={d}>{d}</option>
             )}
+          </select>
+          <select
+            name="sdg"
+            defaultValue={sdg ?? ''}
+            className="rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-sm text-white focus:border-purple-500 focus:outline-none"
+          >
+            <option value="">All SDGs</option>
+            {[
+              'No Poverty',
+              'Zero Hunger',
+              'Good Health',
+              'Quality Education',
+              'Gender Equality',
+              'Clean Water',
+              'Affordable Energy',
+              'Decent Work',
+              'Industry Innovation',
+              'Reduced Inequalities',
+              'Sustainable Cities',
+              'Responsible Consumption',
+              'Climate Action',
+              'Life Below Water',
+              'Life on Land',
+              'Peace and Justice',
+              'Partnerships',
+            ].map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
           </select>
           <button
             type="submit"

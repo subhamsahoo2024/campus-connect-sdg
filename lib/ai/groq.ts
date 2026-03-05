@@ -57,10 +57,10 @@ Write exactly 2 sentences explaining why this is a good match. Be specific, ment
 export async function generateStartupGrowthInsight(
   startup: {
     name: string;
-    pitch?: string | null;
+    description?: string | null;
     stage?: string | null;
     domain?: string | null;
-    sdgs?: string[] | null;
+    sdg_tags?: string[] | null;
   },
   activitySummary: string,
 ): Promise<string> {
@@ -70,10 +70,10 @@ export async function generateStartupGrowthInsight(
 Analyze this startup and write a 3-sentence growth insight for an investor.
 
 Startup: ${startup.name}
-Pitch: ${startup.pitch || "N/A"}
+Description: ${startup.description || "N/A"}
 Stage: ${startup.stage || "N/A"}
 Domain: ${startup.domain || "N/A"}
-SDG Tags: ${startup.sdgs?.join(", ") || "N/A"}
+SDG Tags: ${startup.sdg_tags?.join(", ") || "N/A"}
 Activity: ${activitySummary}
 
 Write exactly 3 concise sentences covering: (1) the team's momentum, (2) the market opportunity, and (3) a forward-looking observation. No preamble.`;

@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidateTag } from 'next/cache'
+import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
 export type MentorshipStatus = 'pending' | 'active' | 'completed' | 'cancelled'
@@ -71,8 +71,8 @@ export async function updateMentorshipStatus(matchId: string, status: Mentorship
 
   if (error) throw new Error(`Failed to update status: ${error.message}`)
 
-  revalidateTag('mentor-connections')
-  revalidateTag('matches')
+  revalidatePath('/mentor')
+  revalidatePath('/mentor/mentees')
 }
 
 /**
@@ -107,7 +107,7 @@ export async function scheduleMeeting(data: {
 
   if (error) throw new Error(`Failed to schedule meeting: ${error.message}`)
 
-  revalidateTag('meetings')
+  revalidatePath('/mentor/meetings')
 }
 
 /**
@@ -173,7 +173,7 @@ export async function updateMeetingStatus(meetingId: string, status: MeetingStat
 
   if (error) throw new Error(`Failed to update meeting: ${error.message}`)
 
-  revalidateTag('meetings')
+  revalidatePath('/mentor/meetings')
 }
 
 /**
