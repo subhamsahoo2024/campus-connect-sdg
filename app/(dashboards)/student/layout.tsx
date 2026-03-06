@@ -6,6 +6,7 @@ import { updateLoginStreak } from "@/lib/gamification/streak";
 const NAV_ITEMS = [
   { href: "/student", label: "Dashboard", icon: "🏠" },
   { href: "/student/startup", label: "My Startup", icon: "🚀" },
+  { href: "/student/competitions", label: "Competitions", icon: "🏆" },
   { href: "/student/missions", label: "Daily Missions", icon: "⚡" },
   { href: "/student/matches", label: "Find Mentors", icon: "🤝" },
   { href: "/student/notifications", label: "Notifications", icon: "🔔" },
