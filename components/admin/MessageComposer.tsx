@@ -155,14 +155,15 @@ export default function MessageComposer({
 
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-6">
-      <h3 className="mb-4 text-lg font-semibold text-white">
-        ✍️ Compose Message
-      </h3>
+      <h3 className="mb-4 text-lg font-semibold text-white">✍️ Mail</h3>
 
       {/* Subject */}
       <div className="mb-4">
         <label className="mb-2 block text-sm text-slate-400">
-          Subject <span className="text-slate-500">(used as email subject & WhatsApp heading)</span>
+          Subject{" "}
+          <span className="text-slate-500">
+            (used as email subject & WhatsApp heading)
+          </span>
         </label>
         <input
           type="text"
@@ -185,9 +186,7 @@ export default function MessageComposer({
           rows={6}
           className="w-full resize-y rounded-lg border border-white/10 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none"
         />
-        <p className="mt-1 text-xs text-slate-500">
-          {body.length} characters
-        </p>
+        <p className="mt-1 text-xs text-slate-500">{body.length} characters</p>
       </div>
 
       {/* Preview */}
@@ -220,27 +219,6 @@ export default function MessageComposer({
               {recipientsWithEmail.length}
             </span>
           )}
-        </button>
-
-        <button
-          onClick={handleSendWhatsApp}
-          disabled={!canSend || sending || recipientsWithPhone.length === 0}
-          className="flex items-center gap-2 rounded-lg bg-green-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          💬 Send via WhatsApp
-          {recipientsWithPhone.length > 0 && (
-            <span className="rounded-full bg-green-500/50 px-2 py-0.5 text-xs">
-              {recipientsWithPhone.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={handleSendBoth}
-          disabled={!canSend || sending}
-          className="flex items-center gap-2 rounded-lg bg-purple-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          🚀 Send Both
         </button>
       </div>
 
@@ -282,9 +260,7 @@ export default function MessageComposer({
                     <p className="text-sm text-white">
                       {r.full_name || "Unnamed"}
                     </p>
-                    <p className="text-xs text-slate-400">
-                      {r.phone_number}
-                    </p>
+                    <p className="text-xs text-slate-400">{r.phone_number}</p>
                   </div>
                   <a
                     href={waUrl}
