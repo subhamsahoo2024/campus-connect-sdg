@@ -6,7 +6,6 @@ import type { ScoredCompetition } from "@/app/actions/competitions";
 const PLATFORM_STYLES: Record<string, string> = {
   Devpost: "bg-blue-500/20 text-blue-400 ring-blue-500/30",
   Unstop: "bg-orange-500/20 text-orange-400 ring-orange-500/30",
-  Devfolio: "bg-emerald-500/20 text-emerald-400 ring-emerald-500/30",
   MLH: "bg-red-500/20 text-red-400 ring-red-500/30",
   Kaggle: "bg-cyan-500/20 text-cyan-400 ring-cyan-500/30",
   LeetCode: "bg-amber-500/20 text-amber-400 ring-amber-500/30",
@@ -17,51 +16,6 @@ const PLATFORM_STYLES: Record<string, string> = {
   AtCoder: "bg-sky-500/20 text-sky-400 ring-sky-500/30",
   TopCoder: "bg-slate-500/20 text-slate-300 ring-slate-500/30",
 };
-
-// ── Skeleton loader for AI pipeline latency ─────────────────────────────
-
-export function CompetitionsSkeleton({ count = 3 }: { count?: number }) {
-  return (
-    <div>
-      <div className="mb-4 flex items-center gap-2">
-        <span className="text-xl">🏆</span>
-        <h3 className="text-base font-semibold text-white">
-          Recommended Competitions
-        </h3>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: count }).map((_, i) => (
-          <div
-            key={i}
-            className="flex flex-col rounded-xl border border-white/10 bg-white/5 p-5 animate-pulse"
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <div className="h-5 w-16 rounded-full bg-white/10" />
-              <div className="h-4 w-14 rounded bg-white/10" />
-            </div>
-            <div className="mb-1 h-4 w-3/4 rounded bg-white/10" />
-            <div className="mb-3 h-3 w-full rounded bg-white/8" />
-            <div className="mb-3 flex gap-1.5">
-              <div className="h-4 w-12 rounded-md bg-purple-500/10" />
-              <div className="h-4 w-16 rounded-md bg-purple-500/10" />
-            </div>
-            <div className="mb-4 mt-auto flex gap-3">
-              <div className="h-3 w-16 rounded bg-white/10" />
-              <div className="h-3 w-20 rounded bg-white/10" />
-            </div>
-            <div className="flex gap-2">
-              <div className="h-9 flex-1 rounded-lg bg-purple-600/30" />
-              <div className="h-9 flex-1 rounded-lg bg-white/10" />
-            </div>
-          </div>
-        ))}
-      </div>
-      <p className="mt-3 text-center text-xs text-slate-500 animate-pulse">
-        🤖 AI is searching for competitions matched to your skills…
-      </p>
-    </div>
-  );
-}
 
 const DIFFICULTY_STYLES: Record<string, string> = {
   Beginner: "text-emerald-400",
@@ -130,7 +84,7 @@ export default function RecommendedCompetitions({
               {/* Top row: platform badge + difficulty */}
               <div className="mb-3 flex items-center justify-between">
                 <span
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${PLATFORM_STYLES[c.platform] ?? "bg-violet-500/20 text-violet-300 ring-violet-500/30"}`}
+                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${PLATFORM_STYLES[c.platform] ?? "bg-white/10 text-slate-300 ring-white/20"}`}
                 >
                   {c.platform}
                 </span>
@@ -171,7 +125,7 @@ export default function RecommendedCompetitions({
                   ⏰ {daysLeft > 0 ? `${daysLeft}d left` : "Deadline passed"}
                 </span>
                 <span>•</span>
-                <span>🏅 {c.prize}</span>
+                <span> 🏅 {c.prize.replace(/<[^>]*>/g, "")} </span>
               </div>
 
               {/* Action buttons */}

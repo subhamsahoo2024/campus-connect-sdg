@@ -1,13 +1,11 @@
-import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/shared/Navbar";
 import RecommendedCompetitions from "@/components/student/RecommendedCompetitions";
-import { CompetitionsSkeleton } from "@/components/student/RecommendedCompetitions";
 import { getAllCompetitions } from "@/app/actions/competitions";
 
 export const dynamic = "force-dynamic";
 
-async function CompetitionsList() {
+export default async function CompetitionsPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -21,10 +19,6 @@ async function CompetitionsList() {
 
   const competitions = await getAllCompetitions(profile?.skills ?? []);
 
-  return <RecommendedCompetitions competitions={competitions} />;
-}
-
-export default function CompetitionsPage() {
   return (
     <div className="min-h-full">
       <Navbar
@@ -32,9 +26,7 @@ export default function CompetitionsPage() {
         subtitle="Discover hackathons & challenges matched to your skills"
       />
       <div className="p-6">
-        <Suspense fallback={<CompetitionsSkeleton count={6} />}>
-          <CompetitionsList />
-        </Suspense>
+        <RecommendedCompetitions competitions={competitions} />
       </div>
     </div>
   );
