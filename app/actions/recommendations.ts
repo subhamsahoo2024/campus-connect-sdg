@@ -34,7 +34,7 @@ export async function getRecommendedStartups(filters: {
   const embedding = await generateEmbedding(thesisText);
   if (!embedding)
     throw new Error(
-      "Could not generate embedding – ensure HUGGING_FACE_API_KEY is set.",
+      "Could not generate embedding – ensure GROQ_API_KEY is set.",
     );
 
   const startups = await findSimilarStartups(embedding, filters, 10);
@@ -96,7 +96,7 @@ export async function getInvestorPipeline() {
   const { data } = await supabase
     .from("investor_pipeline")
     .select(
-      "*, startups(id, name, description, stage, domain, sdg_tags, funding_raised)",
+      "*, startups(id, name:title, description, stage, domain, sdg_tags:sdgs, funding_raised)",
     )
     .eq("investor_id", user.id);
 

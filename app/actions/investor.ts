@@ -37,11 +37,11 @@ export async function getInvestorPipeline() {
       updated_at,
       startups(
         id,
-        name,
-        pitch,
+        name:title,
+        description,
         stage,
         domain,
-        sdgs,
+        sdg_tags:sdgs,
         funding_raised,
         funding_goal,
         pitch_deck_url,
@@ -239,11 +239,11 @@ export async function discoverStartups(filters?: {
     .select(
       `
       id,
-      name,
-      pitch,
+      name:title,
+      description,
       stage,
       domain,
-      sdgs,
+      sdg_tags:sdgs,
       funding_raised,
       pitch_deck_url,
       demo_url,
@@ -252,8 +252,7 @@ export async function discoverStartups(filters?: {
       profiles!startups_student_id_fkey(
         full_name,
         rs_id,
-        innovation_score,
-        linkedin_url
+        innovation_score
       )
     `,
     )
@@ -296,7 +295,7 @@ export async function getStartupGrowthInsight(startupId: string) {
 
   const { data: startup } = await supabase
     .from("startups")
-    .select("id, name, pitch, stage, domain, sdgs, created_at, updated_at")
+    .select("id, name:title, description, stage, domain, sdg_tags:sdgs, created_at, updated_at")
     .eq("id", startupId)
     .single();
 
@@ -314,10 +313,10 @@ export async function getStartupGrowthInsight(startupId: string) {
     const insight = await generateStartupGrowthInsight(
       {
         name: startup.name,
-        description: startup.pitch,
+        description: startup.description,
         stage: startup.stage,
         domain: startup.domain,
-        sdg_tags: startup.sdgs,
+        sdg_tags: startup.sdg_tags,
       },
       activitySummary,
     );

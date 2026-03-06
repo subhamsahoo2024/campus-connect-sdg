@@ -51,6 +51,7 @@ CREATE TABLE profiles (
   innovation_score INTEGER DEFAULT 0,
   streak_count INTEGER DEFAULT 0,
   last_login_date DATE,
+  linkedin_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   -- Embedding for AI matchmaking
@@ -63,13 +64,13 @@ CREATE TABLE profiles (
 CREATE TABLE startups (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   student_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
+  name TEXT NOT NULL,
   description TEXT,
   problem_statement TEXT,
   solution TEXT,
   stage startup_stage DEFAULT 'idea',
   domain TEXT, -- e.g., 'FinTech', 'EdTech', 'HealthTech'
-  sdgs INTEGER[], -- SDG alignment
+  sdg_tags TEXT[], -- SDG alignment
   team_size INTEGER DEFAULT 1,
   funding_raised DECIMAL(12, 2) DEFAULT 0,
   pitch_deck_url TEXT,

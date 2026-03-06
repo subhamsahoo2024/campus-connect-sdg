@@ -34,12 +34,11 @@ export async function getMentorConnections() {
         bio,
         skills,
         sdgs,
-        innovation_score,
-        linkedin_url
+        innovation_score
       ),
       startups(
         id,
-        name,
+        name:title,
         stage,
         domain
       )

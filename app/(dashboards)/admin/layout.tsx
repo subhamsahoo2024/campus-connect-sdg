@@ -4,8 +4,10 @@ import Sidebar from '@/components/shared/Sidebar'
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: '🏠' },
+  { href: '/admin/overview', label: 'Overview', icon: '📈' },
   { href: '/admin/ecosystem', label: 'Ecosystem', icon: '🌐' },
   { href: '/admin/insights', label: 'AI Insights', icon: '🤖' },
+  { href: '/admin/activity', label: 'Activity', icon: '📊' },
   { href: '/admin/users', label: 'Users', icon: '👥' },
 ]
 

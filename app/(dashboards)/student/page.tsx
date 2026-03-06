@@ -22,7 +22,7 @@ export default async function StudentDashboard() {
       .single(),
     supabase
       .from("startups")
-      .select("id, name, stage")
+      .select("id, name:title, stage")
       .eq("student_id", user!.id)
       .order("created_at", { ascending: false })
       .limit(1)

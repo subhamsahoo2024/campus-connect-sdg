@@ -92,10 +92,10 @@ export async function upsertStartup(formData: FormData) {
     await supabase
       .from("startups")
       .update({
-        name,
+        title: name,
         description,
         domain,
-        sdg_tags,
+        sdgs: sdg_tags,
         embedding,
         updated_at: new Date().toISOString(),
       })
@@ -104,10 +104,10 @@ export async function upsertStartup(formData: FormData) {
   } else {
     await supabase.from("startups").insert({
       student_id: user.id,
-      name,
+      title: name,
       description,
       domain,
-      sdg_tags,
+      sdgs: sdg_tags,
       stage: "idea",
       embedding,
     });
@@ -120,6 +120,42 @@ export async function upsertStartup(formData: FormData) {
 
   revalidatePath("/student");
   revalidatePath("/student/startup");
+}
+
+export async function updateProfile(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const full_name = formData.get("full_name") as string;
+  const bio = formData.get("bio") as string;
+  const institution = formData.get("institution") as string;
+  const department = formData.get("department") as string;
+  const skillsRaw = formData.get("skills") as string;
+  const skills = skillsRaw
+    ? skillsRaw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      full_name: full_name || null,
+      bio: bio || null,
+      institution: institution || null,
+      department: department || null,
+      skills: skills.length > 0 ? skills : null,
+    })
+    .eq("id", user.id);
+
+  if (error) throw new Error(`Failed to update profile: ${error.message}`);
+
+  revalidatePath("/student/profile");
+  revalidatePath("/student");
 }
 
 export async function completeMission(missionId: string, xpReward: number) {

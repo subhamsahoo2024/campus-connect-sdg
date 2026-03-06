@@ -40,7 +40,7 @@ export async function fetchOrGenerateMissions() {
 
   const { data: startup } = await supabase
     .from("startups")
-    .select("name, stage")
+    .select("name:title, stage")
     .eq("student_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -69,7 +69,6 @@ export async function fetchOrGenerateMissions() {
     )
     .select();
 
-  revalidatePath("/student/missions");
   return inserted ?? [];
 }
 
