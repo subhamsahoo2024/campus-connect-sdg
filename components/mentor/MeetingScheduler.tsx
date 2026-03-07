@@ -162,7 +162,6 @@ export default function MeetingScheduler({
             {saving ? "Scheduling..." : "📅 Schedule Meeting"}
           </button>
         </div>
-      </div>
     </div>
   );
 }
