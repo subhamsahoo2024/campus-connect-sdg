@@ -43,7 +43,6 @@ export async function getInvestorPipeline() {
         domain,
         sdg_tags:sdgs,
         funding_raised,
-        funding_goal,
         pitch_deck_url,
         demo_url,
         student_id,
