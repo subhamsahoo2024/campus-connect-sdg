@@ -18,12 +18,12 @@ export async function fetchOrGenerateMissions() {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // Check if missions already exist for today (not expired)
+  // Check if missions already exist for today (created between today midnight and tomorrow midnight)
   const { data: existing } = await supabase
     .from("missions")
     .select("*")
     .eq("student_id", user.id)
-    .gte("expires_at", today.toISOString())
+    .gte("created_at", today.toISOString())
     .lt("created_at", tomorrow.toISOString());
 
   if (existing && existing.length > 0) return existing;
