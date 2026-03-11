@@ -29,7 +29,39 @@ export async function findSimilarProfiles(
     match_count: limit,
   });
 
-  if (error) throw new Error(`Vector search error: ${error.message}`);
+  if (error) {
+    // If the vector function doesn't exist yet, fall back to a plain query
+    if (
+      error.message.includes("Could not find the function") ||
+      error.message.includes("function") ||
+      error.message.includes("schema cache")
+    ) {
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("profiles")
+        .select("id, rs_id, full_name, skills, sdgs, bio, role, linkedin_url")
+        .eq("role", targetRole)
+        .not("skills", "is", null)
+        .limit(limit);
+
+      if (fallbackError)
+        throw new Error(`Fallback search error: ${fallbackError.message}`);
+
+      return (fallback ?? []).map((p) => ({
+        profile: {
+          id: p.id,
+          rs_id: p.rs_id,
+          full_name: p.full_name,
+          skills: p.skills,
+          sdgs: p.sdgs,
+          bio: p.bio,
+          role: p.role,
+          linkedin_url: p.linkedin_url,
+        },
+        similarity: 0.5, // neutral fallback score
+      }));
+    }
+    throw new Error(`Vector search error: ${error.message}`);
+  }
 
   return (data ?? []) as MatchResult[];
 }

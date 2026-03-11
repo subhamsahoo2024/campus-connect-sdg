@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Navbar from "@/components/shared/Navbar";
+import MentorProfileEditForm from "@/components/mentor/MentorProfileEditForm";
 
 export const dynamic = "force-dynamic";
 
@@ -75,9 +76,7 @@ export default async function MentorProfilePage() {
                   <label className="text-sm font-medium text-slate-400">
                     Email
                   </label>
-                  <div className="mt-1 text-lg text-white">
-                    {profile.email}
-                  </div>
+                  <div className="mt-1 text-lg text-white">{profile.email}</div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-400">
@@ -105,28 +104,28 @@ export default async function MentorProfilePage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-400">
-                    LinkedIn ID
+                    LinkedIn
                   </label>
                   <div className="mt-1 text-lg text-white">
-                    {profile.linkedin_url || "Not set"}
+                    {profile.linkedin_url ? (
+                      <a
+                        href={profile.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 underline"
+                      >
+                        {profile.linkedin_url}
+                      </a>
+                    ) : (
+                      "Not set"
+                    )}
                   </div>
                 </div>
               </div>
 
-              {profile.domain && (
-                <div>
-                  <label className="text-sm font-medium text-slate-400">
-                    Domain
-                  </label>
-                  <div className="mt-1 text-lg text-white">
-                    {profile.domain}
-                  </div>
-                </div>
-              )}
-
               <div>
                 <label className="text-sm font-medium text-slate-400">
-                  Bio
+                  Bio / Mentoring Philosophy
                 </label>
                 <div className="mt-1 text-white">
                   {profile.bio || "Share your mentoring philosophy..."}
@@ -136,7 +135,7 @@ export default async function MentorProfilePage() {
               {profile.skills && profile.skills.length > 0 && (
                 <div>
                   <label className="text-sm font-medium text-slate-400">
-                    Expertise
+                    Expertise / Skills
                   </label>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {profile.skills.map((skill: string) => (
@@ -145,6 +144,24 @@ export default async function MentorProfilePage() {
                         className="rounded-full bg-blue-500/20 px-3 py-1 text-sm text-blue-300"
                       >
                         {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {profile.interests && profile.interests.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium text-slate-400">
+                    Interests
+                  </label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {profile.interests.map((interest: string) => (
+                      <span
+                        key={interest}
+                        className="rounded-full bg-purple-500/20 px-3 py-1 text-sm text-purple-300"
+                      >
+                        {interest}
                       </span>
                     ))}
                   </div>
@@ -170,6 +187,22 @@ export default async function MentorProfilePage() {
               )}
             </div>
           </div>
+
+          {/* Edit Form */}
+          <MentorProfileEditForm
+            profile={{
+              email: profile.email,
+              full_name: profile.full_name ?? null,
+              bio: profile.bio ?? null,
+              institution: profile.institution ?? null,
+              department: profile.department ?? null,
+              phone_number: profile.phone_number ?? null,
+              linkedin_url: profile.linkedin_url ?? null,
+              skills: profile.skills ?? null,
+              interests: profile.interests ?? null,
+              sdgs: profile.sdgs ?? null,
+            }}
+          />
         </div>
 
         {/* Mentoring Stats */}

@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { markAsRead } from "@/app/actions/notifications";
+import MentorshipResponseModal from "@/components/student/MentorshipResponseModal";
 
 interface Notification {
   id: string;
@@ -9,8 +11,25 @@ interface Notification {
   title: string;
   message: string;
   is_read: boolean;
-  action_url: string | null;
+  link: string | null;
   created_at: string;
+}
+
+interface MentorshipInvitePayload {
+  mentorId: string;
+  mentorName: string;
+  personalMessage: string;
+  matchId: string;
+}
+
+function parseMentorshipPayload(raw: string): MentorshipInvitePayload | null {
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.matchId && parsed.mentorName) return parsed;
+  } catch {
+    /* not JSON – regular message */
+  }
+  return null;
 }
 
 interface NotificationListProps {
@@ -25,8 +44,95 @@ const NOTIFICATION_ICONS: Record<string, string> = {
   streak_warning: "🔥",
   startup_milestone: "🚀",
   investment_added: "💰",
+  mentorship_invite: "🧑‍🏫",
+  mentorship_response: "📬",
 };
 
+// ─── Mentorship invite card ─────────────────────────────────────────────────
+function MentorshipInviteCard({
+  notification,
+  payload,
+}: {
+  notification: Notification;
+  payload: MentorshipInvitePayload;
+}) {
+  const [responseModal, setResponseModal] = useState<
+    "active" | "declined" | null
+  >(null);
+  const [responded, setResponded] = useState(false);
+  const isUnread = !notification.is_read;
+
+  return (
+    <div
+      className={`rounded-xl border backdrop-blur-sm transition ${
+        isUnread
+          ? "border-purple-500/30 bg-purple-500/10"
+          : "border-white/10 bg-white/5"
+      }`}
+    >
+      <div className="flex items-start gap-4 p-6">
+        <div className="shrink-0 text-4xl">🧑‍🏫</div>
+
+        <div className="flex-1 space-y-2">
+          <div className="flex items-start justify-between gap-4">
+            <h3 className="text-lg font-semibold text-white">
+              {notification.title}
+            </h3>
+            {isUnread && (
+              <span className="flex h-2 w-2 shrink-0 rounded-full bg-purple-500" />
+            )}
+          </div>
+
+          {payload.personalMessage && (
+            <blockquote className="rounded-lg border-l-2 border-purple-500/50 bg-purple-500/5 px-4 py-2 text-sm italic text-slate-300">
+              &ldquo;{payload.personalMessage}&rdquo;
+            </blockquote>
+          )}
+
+          <p className="text-xs text-slate-500">
+            {new Date(notification.created_at).toLocaleString()}
+          </p>
+
+          {responded ? (
+            <p className="text-sm font-medium text-green-400">
+              ✓ Response sent
+            </p>
+          ) : (
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setResponseModal("active")}
+                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-500 active:scale-95"
+              >
+                ✓ Accept
+              </button>
+              <button
+                onClick={() => setResponseModal("declined")}
+                className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/20 active:scale-95"
+              >
+                ✕ Decline
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {responseModal && (
+        <MentorshipResponseModal
+          matchId={payload.matchId}
+          mentorName={payload.mentorName}
+          initialStatus={responseModal}
+          onClose={() => setResponseModal(null)}
+          onSuccess={() => {
+            setResponded(true);
+            setResponseModal(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Main list ──────────────────────────────────────────────────────────────
 export default function NotificationList({
   notifications,
 }: NotificationListProps) {
@@ -37,10 +143,10 @@ export default function NotificationList({
   if (notifications.length === 0) {
     return (
       <div className="rounded-xl border border-white/10 bg-white/5 p-12 text-center backdrop-blur-sm">
-        <div className="text-6xl mb-4">🔔</div>
+        <div className="mb-4 text-6xl">🔔</div>
         <p className="text-xl text-slate-400">No notifications yet</p>
         <p className="mt-2 text-sm text-slate-500">
-          You'll be notified when you earn badges, receive matches, or have
+          You&apos;ll be notified when you earn badges, receive matches, or have
           important updates
         </p>
       </div>
@@ -50,6 +156,21 @@ export default function NotificationList({
   return (
     <div className="space-y-3">
       {notifications.map((notification) => {
+        // Handle mentorship invite with inline accept/decline
+        if (notification.type === "mentorship_invite") {
+          const payload = parseMentorshipPayload(notification.message);
+          if (payload) {
+            return (
+              <MentorshipInviteCard
+                key={notification.id}
+                notification={notification}
+                payload={payload}
+              />
+            );
+          }
+        }
+
+        // Generic notification card
         const icon = NOTIFICATION_ICONS[notification.type] || "📬";
         const isUnread = !notification.is_read;
 
@@ -63,17 +184,15 @@ export default function NotificationList({
             }`}
           >
             <div className="flex items-start gap-4 p-6">
-              {/* Icon */}
-              <div className="flex-shrink-0 text-4xl">{icon}</div>
+              <div className="shrink-0 text-4xl">{icon}</div>
 
-              {/* Content */}
               <div className="flex-1 space-y-1">
                 <div className="flex items-start justify-between gap-4">
                   <h3 className="text-lg font-semibold text-white">
                     {notification.title}
                   </h3>
                   {isUnread && (
-                    <span className="flex h-2 w-2 flex-shrink-0 rounded-full bg-purple-500" />
+                    <span className="flex h-2 w-2 shrink-0 rounded-full bg-purple-500" />
                   )}
                 </div>
                 <p className="text-slate-300">{notification.message}</p>
@@ -82,17 +201,7 @@ export default function NotificationList({
                 </p>
               </div>
 
-              {/* Actions */}
-              <div className="flex flex-shrink-0 items-center gap-2">
-                {notification.action_url && (
-                  <Link
-                    href={notification.action_url}
-                    className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-700"
-                    onClick={() => handleMarkAsRead(notification.id)}
-                  >
-                    View
-                  </Link>
-                )}
+              <div className="flex shrink-0 items-center gap-2">
                 {isUnread && (
                   <button
                     onClick={() => handleMarkAsRead(notification.id)}

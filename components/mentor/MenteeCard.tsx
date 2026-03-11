@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import InviteMenteeModal from "./InviteMenteeModal";
+
 interface MenteeCardProps {
   mentee: {
     id: string;
@@ -10,7 +15,6 @@ interface MenteeCardProps {
   };
   compatibilityScore: number;
   reasoning?: string;
-  onConnect?: (menteeId: string) => void;
 }
 
 export default function MenteeCard({
@@ -18,6 +22,7 @@ export default function MenteeCard({
   compatibilityScore,
   reasoning,
 }: MenteeCardProps) {
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const scoreColor =
     compatibilityScore >= 0.8
       ? "text-green-400 bg-green-500/10 ring-green-500/30"
@@ -70,26 +75,32 @@ export default function MenteeCard({
       )}
 
       {/* Actions */}
-      <div className="flex gap-2">
-        <a
-          href={`https://wa.me/?text=Hi ${encodeURIComponent(mentee.full_name)}, I found your profile on INNOVEX and would love to connect!`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-green-600/10 px-3 py-2 text-xs font-medium text-green-400 ring-1 ring-green-600/30 transition hover:bg-green-600/20"
+      <div className="flex flex-col gap-2">
+        <button
+          onClick={() => setShowInviteModal(true)}
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-purple-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-purple-500 active:scale-95"
         >
-          <span>💬</span> WhatsApp
-        </a>
+          <span>🤝</span> Invite to Mentor
+        </button>
+
         {mentee.linkedin_url && (
           <a
             href={mentee.linkedin_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#0A66C2]/10 px-3 py-2 text-xs font-medium text-[#70aae0] ring-1 ring-[#0A66C2]/30 transition hover:bg-[#0A66C2]/20"
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#0A66C2]/10 px-3 py-2 text-xs font-medium text-[#70aae0] ring-1 ring-[#0A66C2]/30 transition hover:bg-[#0A66C2]/20"
           >
             <span>🔗</span> LinkedIn
           </a>
         )}
       </div>
+
+      {showInviteModal && (
+        <InviteMenteeModal
+          mentee={mentee}
+          onClose={() => setShowInviteModal(false)}
+        />
+      )}
     </div>
   );
 }

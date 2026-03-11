@@ -1,24 +1,29 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { signOut } from '@/app/actions/auth'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut } from "@/app/actions/auth";
 
 interface NavItem {
-  href: string
-  label: string
-  icon: string
+  href: string;
+  label: string;
+  icon: string;
 }
 
 interface SidebarProps {
-  role: string
-  rsId: string
-  fullName: string
-  navItems: NavItem[]
+  role: string;
+  rsId: string;
+  fullName: string;
+  navItems: NavItem[];
 }
 
-export default function Sidebar({ role, rsId, fullName, navItems }: SidebarProps) {
-  const pathname = usePathname()
+export default function Sidebar({
+  role,
+  rsId,
+  fullName,
+  navItems,
+}: SidebarProps) {
+  const pathname = usePathname();
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-white/10 bg-slate-900/80 backdrop-blur-sm">
@@ -41,22 +46,25 @@ export default function Sidebar({ role, rsId, fullName, navItems }: SidebarProps
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <ul className="space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+            const isRoot = item.href.split("/").filter(Boolean).length === 1;
+            const isActive =
+              pathname === item.href ||
+              (!isRoot && pathname.startsWith(item.href + "/"));
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                     isActive
-                      ? 'bg-purple-600/20 text-purple-300'
-                      : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                      ? "bg-purple-600/20 text-purple-300"
+                      : "text-slate-400 hover:bg-white/5 hover:text-white"
                   }`}
                 >
                   <span className="text-base">{item.icon}</span>
                   {item.label}
                 </Link>
               </li>
-            )
+            );
           })}
         </ul>
       </nav>
@@ -74,5 +82,5 @@ export default function Sidebar({ role, rsId, fullName, navItems }: SidebarProps
         </form>
       </div>
     </aside>
-  )
+  );
 }

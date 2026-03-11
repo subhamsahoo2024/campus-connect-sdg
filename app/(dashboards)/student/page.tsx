@@ -7,6 +7,7 @@ import ShareButton from "@/components/student/ShareButton";
 import RecommendedCompetitions from "@/components/student/RecommendedCompetitions";
 import { fetchOrGenerateMissions } from "@/app/actions/missions";
 import { getRecommendedCompetitions } from "@/app/actions/competitions";
+import PendingMentorInvites from "@/components/student/PendingMentorInvites";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,28 @@ export default async function StudentDashboard() {
     ? await getRecommendedCompetitions(profile?.skills ?? [])
     : [];
 
+  // Pending mentor invites (matches where this student received an invite)
+  const { data: rawInvites } = await supabase
+    .from("matches")
+    .select(
+      `id, created_at,
+      profiles!matches_mentor_id_fkey(full_name, bio, institution, skills)`,
+    )
+    .eq("student_id", user!.id)
+    .eq("status", "pending");
+
+  const pendingInvites = (rawInvites ?? []).map((row: any) => {
+    const mentor = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+    return {
+      id: row.id as string,
+      mentorName: (mentor?.full_name as string) ?? "A Mentor",
+      mentorBio: (mentor?.bio as string | null) ?? null,
+      mentorInstitution: (mentor?.institution as string | null) ?? null,
+      mentorSkills: (mentor?.skills as string[] | null) ?? null,
+      createdAt: row.created_at as string,
+    };
+  });
+
   return (
     <div className="min-h-full">
       <Navbar
@@ -48,7 +71,7 @@ export default async function StudentDashboard() {
 
       <div className="p-6">
         {/* Welcome Banner */}
-        <div className="mb-6 rounded-xl border border-sky-500/20 bg-gradient-to-r from-sky-900/30 to-slate-900/30 p-5">
+        <div className="mb-6 rounded-xl border border-sky-500/20 bg-linear-to-r from-sky-900/30 to-slate-900/30 p-5">
           <h2 className="text-lg font-semibold text-white">
             Welcome back, {profile?.full_name?.split(" ")[0] ?? "Student"} 👋
           </h2>
@@ -56,6 +79,13 @@ export default async function StudentDashboard() {
             Keep building—every action increases your Innovation Score.
           </p>
         </div>
+
+        {/* Pending mentor invitations */}
+        {pendingInvites.length > 0 && (
+          <div className="mb-6">
+            <PendingMentorInvites invites={pendingInvites} />
+          </div>
+        )}
 
         {/* Quick stats */}
         <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">

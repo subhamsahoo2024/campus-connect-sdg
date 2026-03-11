@@ -41,7 +41,7 @@ as $$
     ) as profile,
     1 - (p.embedding <=> query_embedding) as similarity
   from profiles p
-  where p.role = target_role
+  where p.role = target_role::user_role
     and p.embedding is not null
   order by p.embedding <=> query_embedding
   limit match_count;

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export type MentorshipStatus = "pending" | "active" | "completed" | "cancelled";
+export type MentorshipStatus = "pending" | "active" | "completed" | "declined";
 export type MeetingStatus = "pending" | "confirmed" | "completed" | "cancelled";
 
 /**
@@ -233,4 +233,67 @@ export async function getMentorDomainStats() {
     domain,
     count,
   }));
+}
+
+/**
+ * Update mentor profile
+ */
+export async function updateMentorProfile(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const full_name = formData.get("full_name") as string;
+  const bio = formData.get("bio") as string;
+  const institution = formData.get("institution") as string;
+  const department = formData.get("department") as string;
+  const phone_number = formData.get("phone_number") as string;
+  const linkedin_url = formData.get("linkedin_url") as string;
+
+  const skillsRaw = formData.get("skills") as string;
+  const skills = skillsRaw
+    ? skillsRaw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
+  const interestsRaw = formData.get("interests") as string;
+  const interests = interestsRaw
+    ? interestsRaw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
+  const sdgsRaw = formData.get("sdgs") as string;
+  const sdgs = sdgsRaw
+    ? sdgsRaw
+        .split(",")
+        .map((s) => parseInt(s.trim(), 10))
+        .filter((n) => !isNaN(n) && n >= 1 && n <= 17)
+    : [];
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      full_name: full_name || null,
+      bio: bio || null,
+      institution: institution || null,
+      department: department || null,
+      phone_number: phone_number || null,
+      linkedin_url: linkedin_url || null,
+      skills: skills.length > 0 ? skills : null,
+      interests: interests.length > 0 ? interests : null,
+      sdgs: sdgs.length > 0 ? sdgs : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id);
+
+  if (error) throw new Error(`Failed to update profile: ${error.message}`);
+
+  revalidatePath("/mentor/profile");
+  revalidatePath("/mentor");
 }
