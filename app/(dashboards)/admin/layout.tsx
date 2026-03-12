@@ -27,7 +27,7 @@ export default async function AdminLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("rs_id, full_name, role")
+    .select("rs_id, full_name, role, avatar_url")
     .eq("id", user.id)
     .single();
 
@@ -39,6 +39,7 @@ export default async function AdminLayout({
         role={profile.role}
         rsId={profile.rs_id}
         fullName={profile.full_name ?? "Admin"}
+        avatarUrl={profile.avatar_url ?? null}
         navItems={NAV_ITEMS}
       />
       <main className="flex-1 overflow-y-auto">{children}</main>
