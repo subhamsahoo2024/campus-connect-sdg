@@ -269,14 +269,6 @@ export default function StartupPipelineCard({
               )}
             </div>
           )}
-
-          {/* View Full Profile Link */}
-          <a
-            href={`/investor/startup/${startup.id}`}
-            className="block rounded bg-white/5 px-2 py-1.5 text-center text-xs text-slate-300 transition hover:bg-white/10"
-          >
-            View Full Profile →
-          </a>
         </div>
       )}
     </div>

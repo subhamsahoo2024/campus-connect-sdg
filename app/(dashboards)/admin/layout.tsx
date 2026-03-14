@@ -7,7 +7,7 @@ const NAV_ITEMS = [
   { href: "/admin/overview", label: "Overview", icon: "📈" },
   { href: "/admin/ecosystem", label: "Ecosystem", icon: "🌐" },
   { href: "/admin/insights", label: "AI Insights", icon: "🤖" },
-  { href: "/admin/activity", label: "Activity", icon: "📊" },
+
   { href: "/admin/users", label: "Users", icon: "👥" },
   { href: "/admin/messaging", label: "Messaging", icon: "📨" },
   { href: "/admin/profile", label: "Profile", icon: "👤" },

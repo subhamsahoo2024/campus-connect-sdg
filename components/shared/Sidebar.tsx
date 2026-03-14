@@ -36,10 +36,17 @@ export default function Sidebar({
   );
   const backdropRef = useRef<HTMLDivElement>(null);
 
-  // Hydrate from localStorage after mount
+  // Hydrate from localStorage after mount; seed it from the server prop if empty
   useEffect(() => {
     const stored = localStorage.getItem(LS_KEY);
-    if (stored) setDisplayAvatar(stored);
+    if (stored) {
+      setDisplayAvatar(stored);
+    } else if (avatarUrl) {
+      // Persist the DB value so subsequent loads are instant
+      localStorage.setItem(LS_KEY, avatarUrl);
+      setDisplayAvatar(avatarUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Listen for storage changes (e.g. user generates new avatar in same session)

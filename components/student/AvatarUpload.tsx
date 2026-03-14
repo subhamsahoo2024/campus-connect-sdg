@@ -174,6 +174,18 @@ export default function AvatarUpload({
     return currentAvatarUrl ?? null;
   });
 
+  // Seed localStorage with the DB value if nothing is stored yet
+  useEffect(() => {
+    const stored = localStorage.getItem(LS_KEY);
+    if (!stored && currentAvatarUrl) {
+      localStorage.setItem(LS_KEY, currentAvatarUrl);
+      setGeneratedUrl(currentAvatarUrl);
+    } else if (stored && !generatedUrl) {
+      setGeneratedUrl(stored);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentAvatarUrl]);
+
   const [isDragging, setIsDragging] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [toast, setToast] = useState<{
