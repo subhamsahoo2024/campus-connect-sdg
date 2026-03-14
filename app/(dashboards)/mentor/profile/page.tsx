@@ -49,8 +49,11 @@ export default async function MentorProfilePage() {
         <div className="rounded-xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
           <div className="flex items-start gap-8">
             {/* Avatar */}
-            <div className="flex-shrink-0 w-52">
-              <AvatarUpload currentAvatarUrl={profile.avatar_url ?? null} />
+            <div className="shrink-0 w-52">
+              <AvatarUpload
+                role="mentor"
+                currentAvatarUrl={profile.avatar_url ?? null}
+              />
             </div>
 
             {/* Info */}
@@ -208,13 +211,13 @@ export default async function MentorProfilePage() {
 
         {/* Mentoring Stats */}
         <div className="grid grid-cols-3 gap-6">
-          <div className="rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-blue-600/5 p-6 text-center backdrop-blur-sm">
+          <div className="rounded-xl border border-blue-500/20 bg-linear-to-br from-blue-500/10 to-blue-600/5 p-6 text-center backdrop-blur-sm">
             <div className="text-3xl font-bold text-white">
               {activeCount ?? 0}
             </div>
             <div className="mt-1 text-sm text-slate-400">Active Mentees</div>
           </div>
-          <div className="rounded-xl border border-green-500/20 bg-gradient-to-br from-green-500/10 to-green-600/5 p-6 text-center backdrop-blur-sm">
+          <div className="rounded-xl border border-green-500/20 bg-linear-to-br from-green-500/10 to-green-600/5 p-6 text-center backdrop-blur-sm">
             <div className="text-3xl font-bold text-white">
               {completedCount ?? 0}
             </div>
@@ -222,7 +225,7 @@ export default async function MentorProfilePage() {
               Completed Mentorships
             </div>
           </div>
-          <div className="rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-purple-600/5 p-6 text-center backdrop-blur-sm">
+          <div className="rounded-xl border border-purple-500/20 bg-linear-to-br from-purple-500/10 to-purple-600/5 p-6 text-center backdrop-blur-sm">
             <div className="text-3xl font-bold text-white">
               {meetingCount ?? 0}
             </div>

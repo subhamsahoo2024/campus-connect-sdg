@@ -26,7 +26,7 @@ export default async function StudentProfilePage() {
   const { earned, all, progress } = await getMyBadges();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 p-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-sky-950 p-8">
       <div className="mx-auto max-w-5xl space-y-8">
         {/* Header */}
         <div>
@@ -40,8 +40,11 @@ export default async function StudentProfilePage() {
         <div className="rounded-xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
           <div className="flex items-start gap-8">
             {/* Avatar */}
-            <div className="flex-shrink-0 w-52">
-              <AvatarUpload currentAvatarUrl={profile.avatar_url ?? null} />
+            <div className="shrink-0 w-52">
+              <AvatarUpload
+                role="student"
+                currentAvatarUrl={profile.avatar_url ?? null}
+              />
             </div>
 
             {/* Profile Info */}
@@ -190,21 +193,21 @@ export default async function StudentProfilePage() {
 
         {/* Stats Summary */}
         <div className="grid grid-cols-3 gap-6">
-          <div className="rounded-xl border border-sky-500/20 bg-gradient-to-br from-sky-500/10 to-sky-600/5 p-6 text-center backdrop-blur-sm">
+          <div className="rounded-xl border border-sky-500/20 bg-linear-to-br from-sky-500/10 to-sky-600/5 p-6 text-center backdrop-blur-sm">
             <div className="text-3xl font-bold text-white">
               {profile.innovation_score}
             </div>
             <div className="mt-1 text-sm text-slate-400">Innovation Score</div>
           </div>
 
-          <div className="rounded-xl border border-green-500/20 bg-gradient-to-br from-green-500/10 to-green-600/5 p-6 text-center backdrop-blur-sm">
+          <div className="rounded-xl border border-green-500/20 bg-linear-to-br from-green-500/10 to-green-600/5 p-6 text-center backdrop-blur-sm">
             <div className="text-3xl font-bold text-white">
               {profile.streak_count}
             </div>
             <div className="mt-1 text-sm text-slate-400">Day Streak</div>
           </div>
 
-          <div className="rounded-xl border border-yellow-500/20 bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 p-6 text-center backdrop-blur-sm">
+          <div className="rounded-xl border border-yellow-500/20 bg-linear-to-br from-yellow-500/10 to-yellow-600/5 p-6 text-center backdrop-blur-sm">
             <div className="text-3xl font-bold text-white">{earned.length}</div>
             <div className="mt-1 text-sm text-slate-400">Badges Earned</div>
           </div>

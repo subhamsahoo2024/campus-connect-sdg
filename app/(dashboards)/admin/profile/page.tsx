@@ -45,7 +45,10 @@ export default async function AdminProfilePage() {
           <div className="flex items-start gap-8">
             {/* Avatar */}
             <div className="shrink-0 w-52">
-              <AvatarUpload currentAvatarUrl={profile.avatar_url ?? null} />
+              <AvatarUpload
+                role="admin"
+                currentAvatarUrl={profile.avatar_url ?? null}
+              />
             </div>
 
             {/* Info */}

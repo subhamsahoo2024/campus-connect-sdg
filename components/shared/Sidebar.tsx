@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { signOut } from "@/app/actions/auth";
+import { getAvatarStickerForRole } from "@/lib/utils/avatar-stickers";
 
 const LS_KEY = "ai_avatar_url";
 
@@ -30,20 +31,26 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   // Prefer localStorage value (updated by AvatarUpload) over server prop
   const [displayAvatar, setDisplayAvatar] = useState<string | null>(
     avatarUrl ?? null,
   );
   const backdropRef = useRef<HTMLDivElement>(null);
+  const fallbackSticker = getAvatarStickerForRole(role);
+  const resolvedAvatarUrl =
+    displayAvatar && !avatarLoadFailed ? displayAvatar : fallbackSticker;
 
   // Hydrate from localStorage after mount; seed it from the server prop if empty
   useEffect(() => {
     const stored = localStorage.getItem(LS_KEY);
     if (stored) {
+      setAvatarLoadFailed(false);
       setDisplayAvatar(stored);
     } else if (avatarUrl) {
       // Persist the DB value so subsequent loads are instant
       localStorage.setItem(LS_KEY, avatarUrl);
+      setAvatarLoadFailed(false);
       setDisplayAvatar(avatarUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -52,11 +59,18 @@ export default function Sidebar({
   // Listen for storage changes (e.g. user generates new avatar in same session)
   useEffect(() => {
     function onStorage(e: StorageEvent) {
-      if (e.key === LS_KEY) setDisplayAvatar(e.newValue ?? avatarUrl ?? null);
+      if (e.key === LS_KEY) {
+        setAvatarLoadFailed(false);
+        setDisplayAvatar(e.newValue ?? avatarUrl ?? null);
+      }
     }
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, [avatarUrl]);
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [displayAvatar]);
 
   // Close lightbox on Escape
   useEffect(() => {
@@ -67,14 +81,6 @@ export default function Sidebar({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [lightboxOpen]);
-
-  // Initials fallback
-  const initials = fullName
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 
   return (
     <>
@@ -90,28 +96,21 @@ export default function Sidebar({
           <div className="flex items-center gap-3">
             {/* Avatar button */}
             <button
-              onClick={() => displayAvatar && setLightboxOpen(true)}
-              title={displayAvatar ? "View photo" : undefined}
+              onClick={() => setLightboxOpen(true)}
+              title="View photo"
               className={`relative shrink-0 h-11 w-11 rounded-full overflow-hidden border-2 border-purple-500/40 transition-all duration-200 ${
-                displayAvatar
+                resolvedAvatarUrl
                   ? "cursor-pointer hover:border-purple-400 hover:scale-105 hover:shadow-[0_0_12px_rgba(168,85,247,0.5)]"
                   : "cursor-default"
               }`}
-              aria-label={
-                displayAvatar ? "View profile photo fullscreen" : undefined
-              }
+              aria-label="View profile photo fullscreen"
             >
-              {displayAvatar ? (
-                <img
-                  src={displayAvatar}
-                  alt={fullName}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-purple-600 to-violet-700 text-white text-sm font-bold">
-                  {initials}
-                </div>
-              )}
+              <img
+                src={resolvedAvatarUrl}
+                alt={fullName}
+                className="h-full w-full object-cover"
+                onError={() => setAvatarLoadFailed(true)}
+              />
             </button>
 
             {/* Name / RS ID / Role */}
@@ -171,7 +170,7 @@ export default function Sidebar({
       </aside>
 
       {/* Fullscreen lightbox */}
-      {lightboxOpen && displayAvatar && (
+      {lightboxOpen && (
         <div
           ref={backdropRef}
           onClick={(e) => {
@@ -196,9 +195,10 @@ export default function Sidebar({
             {/* Glow */}
             <div className="absolute inset-0 rounded-full bg-purple-500/30 blur-3xl scale-110 pointer-events-none" />
             <img
-              src={displayAvatar}
+              src={resolvedAvatarUrl}
               alt={fullName}
               className="relative max-h-[85vh] max-w-[85vw] rounded-2xl object-contain shadow-2xl border border-white/10"
+              onError={() => setAvatarLoadFailed(true)}
             />
           </div>
 

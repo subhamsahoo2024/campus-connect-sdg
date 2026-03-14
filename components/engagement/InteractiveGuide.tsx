@@ -1,9 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { DotLottiePlayer } from "@dotlottie/react-player";
-import "@dotlottie/react-player/dist/index.css";
 import { useGuideBot } from "@/hooks/useOnboardingGuide";
 
 export default function InteractiveGuide() {
@@ -118,8 +117,7 @@ export default function InteractiveGuide() {
         )}
       </AnimatePresence>
 
-      {/* ── Lottie Avatar (always visible) ── */}
-      {/* Outer motion wrapper handles scale/glow — canvas must never be transformed */}
+      {/* ── Guide Sticker (always visible) ── */}
       <motion.div
         whileHover={{
           scale: 1.08,
@@ -135,23 +133,20 @@ export default function InteractiveGuide() {
           <span className="pointer-events-none absolute inset-0 rounded-full guide-glow-ring ring-4 ring-blue-400/40" />
         )}
 
-        {/* Clickable canvas area — fixed integer px size so ImageData never gets fractional dimensions */}
         <button
           onClick={toggleBubble}
-          className="relative block focus:outline-none"
+          className="relative block overflow-hidden rounded-full border border-white/10 bg-linear-to-br from-[#1b2554] via-[#122f72] to-[#111827] focus:outline-none"
           style={{ width: 112, height: 112 }}
           aria-label="Toggle AI assistant"
         >
-          <DotLottiePlayer
-            key={isVisible ? "talking" : "idle"}
-            src={
-              isVisible
-                ? "/animations/boy_talking.json"
-                : "/animations/boy_idle.json"
-            }
-            autoplay
-            loop
-            style={{ width: 112, height: 112 }}
+          <span className="absolute inset-0 bg-radial-[circle_at_30%_30%] from-cyan-300/18 via-transparent to-transparent" />
+          <Image
+            src="/guide-bot-sticker.svg"
+            alt="INNO guide sticker"
+            width={112}
+            height={112}
+            priority
+            className="relative z-10 h-28 w-28 object-contain p-2"
           />
 
           {/* Loading spinner overlay */}
@@ -168,6 +163,10 @@ export default function InteractiveGuide() {
               <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-blue-500" />
             </span>
           )}
+
+          <span className="pointer-events-none absolute bottom-1 left-1/2 z-10 -translate-x-1/2 rounded-full bg-slate-950/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-200">
+            INNO
+          </span>
         </button>
       </motion.div>
     </div>

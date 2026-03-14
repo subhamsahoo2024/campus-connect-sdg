@@ -1,0 +1,26 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="studentBg" x1="28" y1="20" x2="212" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="0.5" stop-color="#0284C7"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="studentCard" x1="78" y1="80" x2="162" y2="168" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E0F2FE"/>
+      <stop offset="1" stop-color="#BAE6FD"/>
+    </linearGradient>
+  </defs>
+  <circle cx="120" cy="120" r="112" fill="url(#studentBg)"/>
+  <circle cx="72" cy="66" r="16" fill="#FDE68A" fill-opacity="0.85"/>
+  <circle cx="176" cy="62" r="10" fill="#F8FAFC" fill-opacity="0.8"/>
+  <path d="M62 154C74 142 90 136 108 136H132C150 136 166 142 178 154" stroke="#CFFAFE" stroke-width="12" stroke-linecap="round" opacity="0.8"/>
+  <rect x="74" y="70" width="92" height="76" rx="24" fill="url(#studentCard)"/>
+  <circle cx="101" cy="103" r="9" fill="#082F49"/>
+  <circle cx="139" cy="103" r="9" fill="#082F49"/>
+  <circle cx="98" cy="100" r="2.5" fill="#F8FAFC"/>
+  <circle cx="136" cy="100" r="2.5" fill="#F8FAFC"/>
+  <path d="M97 123C103.5 130 136.5 130 143 123" stroke="#082F49" stroke-width="6" stroke-linecap="round"/>
+  <path d="M95 51L120 35L145 51" stroke="#FDE68A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M90 165H150" stroke="#F8FAFC" stroke-opacity="0.9" stroke-width="8" stroke-linecap="round"/>
+  <path d="M76 184C88 191 103 195 120 195C137 195 152 191 164 184" stroke="#F8FAFC" stroke-opacity="0.75" stroke-width="8" stroke-linecap="round"/>
+</svg>

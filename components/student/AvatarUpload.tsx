@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateAvatar } from "@/app/actions/generate-avatar";
+import { getAvatarStickerForRole } from "@/lib/utils/avatar-stickers";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                           */
@@ -152,6 +153,7 @@ function ScanOverlay() {
 /* ------------------------------------------------------------------ */
 
 interface AvatarUploadProps {
+  role?: string | null;
   /** Current avatar URL already saved on the profile (optional). */
   currentAvatarUrl?: string | null;
   /** Called after a new avatar URL is saved, so the parent can refresh. */
@@ -159,6 +161,7 @@ interface AvatarUploadProps {
 }
 
 export default function AvatarUpload({
+  role,
   currentAvatarUrl,
   onAvatarGenerated,
 }: AvatarUploadProps) {
@@ -188,11 +191,20 @@ export default function AvatarUpload({
 
   const [isDragging, setIsDragging] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const [toast, setToast] = useState<{
     type: ToastType;
     message: string;
   } | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const fallbackSticker = getAvatarStickerForRole(role);
+
+  const resolvedAvatarUrl =
+    generatedUrl && !avatarLoadFailed ? generatedUrl : fallbackSticker;
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [generatedUrl]);
 
   const dismissToast = useCallback(() => setToast(null), []);
 
@@ -214,6 +226,7 @@ export default function AvatarUpload({
     }
 
     setSelectedFile(file);
+    setAvatarLoadFailed(false);
     // Show raw preview immediately (fast path)
     const objectUrl = URL.createObjectURL(file);
     setPreviewDataUri(objectUrl);
@@ -268,6 +281,7 @@ export default function AvatarUpload({
       // ── Persist in localStorage ──────────────────────────────────
       localStorage.setItem(LS_KEY, result.avatarUrl);
 
+      setAvatarLoadFailed(false);
       setGeneratedUrl(result.avatarUrl);
       setPreviewDataUri(null);
       setSelectedFile(null);
@@ -294,6 +308,7 @@ export default function AvatarUpload({
     setSelectedFile(null);
     setPreviewDataUri(null);
     setGeneratedUrl(null);
+    setAvatarLoadFailed(false);
     setFileError(null);
     localStorage.removeItem(LS_KEY);
   };
@@ -314,29 +329,32 @@ export default function AvatarUpload({
         </div>
 
         {/* ── Current / generated avatar preview ───────────────── */}
-        {generatedUrl && (
-          <motion.div
-            key="generated"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative mx-auto w-36 h-36"
-          >
-            {/* Glow ring */}
-            <div className="absolute inset-0 rounded-full bg-linear-to-br from-sky-500 via-violet-500 to-pink-500 blur-lg opacity-60 scale-110" />
-            <img
-              src={generatedUrl}
-              alt="Generated AI avatar"
-              className="relative z-10 w-36 h-36 rounded-full object-cover border-2 border-white/20 shadow-xl"
-            />
+        <motion.div
+          key={generatedUrl ? "generated" : "default-sticker"}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative mx-auto h-36 w-36"
+        >
+          {/* Glow ring */}
+          <div className="absolute inset-0 rounded-full bg-linear-to-br from-sky-500 via-violet-500 to-pink-500 blur-lg opacity-60 scale-110" />
+          <img
+            src={resolvedAvatarUrl}
+            alt={
+              generatedUrl ? "Generated AI avatar" : "Default avatar sticker"
+            }
+            className="relative z-10 h-36 w-36 rounded-full border-2 border-white/20 bg-slate-900/60 object-cover shadow-xl"
+            onError={() => setAvatarLoadFailed(true)}
+          />
+          {generatedUrl && (
             <button
               onClick={handleReset}
               title="Upload a new photo"
-              className="absolute -top-1 -right-1 z-20 w-7 h-7 rounded-full bg-slate-800 border border-white/20 text-white/70 text-xs flex items-center justify-center hover:bg-white/10 transition-colors"
+              className="absolute -top-1 -right-1 z-20 flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-slate-800 text-xs text-white/70 transition-colors hover:bg-white/10"
             >
               ↺
             </button>
-          </motion.div>
-        )}
+          )}
+        </motion.div>
 
         {/* ── Upload zone ────────────────────────────────────────── */}
         {!generatedUrl && (
@@ -480,6 +498,16 @@ export default function AvatarUpload({
             className="text-center text-xs text-white/40"
           >
             Click ↺ on the avatar to upload a new photo.
+          </motion.p>
+        )}
+
+        {!generatedUrl && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center text-xs text-white/40"
+          >
+            A default sticker is shown until you upload or generate an avatar.
           </motion.p>
         )}
 

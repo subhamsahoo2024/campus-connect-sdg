@@ -44,8 +44,11 @@ export default async function InvestorProfilePage() {
         <div className="rounded-xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
           <div className="flex items-start gap-8">
             {/* Avatar */}
-            <div className="flex-shrink-0 w-52">
-              <AvatarUpload currentAvatarUrl={profile.avatar_url ?? null} />
+            <div className="shrink-0 w-52">
+              <AvatarUpload
+                role="investor"
+                currentAvatarUrl={profile.avatar_url ?? null}
+              />
             </div>
 
             {/* Info */}
